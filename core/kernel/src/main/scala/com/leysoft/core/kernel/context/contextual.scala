@@ -1,15 +1,13 @@
 package com.leysoft.core.kernel.context
 
 import cats.Applicative
-import cats.effect.Sync
 import cats.syntax.applicative.*
 import com.leysoft.core.kernel.context.data.Context
 import fs2.Stream
 
 object contextual:
-   /*
-   type Contextual = [F] =>> Context ?=> F
-    */
+   // type Contextual = [F] =>> Context ?=> F
+  
    type Contextual[F] = Context ?=> F
    object Contextual:
       inline def apply[F[_]](using
@@ -33,7 +31,7 @@ object contextual:
         F: ContextHandler[F]
       ): ContextHandler[F] = F
 
-      given [F[_]: Applicative: Sync]: ContextHandler[F] with
+      given [F[_]: Applicative]: ContextHandler[F] with
          override def handle(using
            ctx: Context
          ): Contextual[F[Context]] =
