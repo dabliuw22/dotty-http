@@ -7,7 +7,6 @@ import fs2.Stream
 
 object contextual:
    // type Contextual = [F] =>> Context ?=> F
-  
    type Contextual[F] = Context ?=> F
    object Contextual:
       inline def apply[F[_]](using
