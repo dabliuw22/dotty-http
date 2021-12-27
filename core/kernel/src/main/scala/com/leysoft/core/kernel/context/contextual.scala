@@ -21,7 +21,7 @@ object contextual:
         Stream.eval(summon[Context].pure[F])
 
    trait ContextHandler[F[_]]:
-      def handle(ctx: Context): Contextual[F[Context]]
+      def handle(using ctx: Context): Contextual[F[Context]]
       def get: Contextual[F[Context]]
       def getS: ContextualStream[F, Context]
 
