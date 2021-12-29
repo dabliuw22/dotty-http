@@ -27,3 +27,5 @@ config/
 .bloop/
 .ammonite/
 project/metals.sbt
+project/project
+.vscode
