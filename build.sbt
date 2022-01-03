@@ -93,19 +93,19 @@ lazy val root = (project in file("."))
     flywayUrl                   := sys
       .env
       .getOrElse(
-        "DB_URL",
-        "jdbc:postgresql://localhost:5432/http4s_db"
+        "DATABASE_URL",
+        "jdbc:postgresql://localhost:5432/database"
       ),
-    flywayUser     := sys.env.getOrElse("DB_USER", "http4s"),
-    flywayPassword := sys.env.getOrElse("DB_PASSWORD", "http4s"),
+    flywayUser     := sys.env.getOrElse("DATABASE_USER", "postgres"),
+    flywayPassword := sys.env.getOrElse("DATABASE_PASSWORD", "postgres"),
     flywayLocations += "db/migration"
   ).enablePlugins(plugins: _*)
   .aggregate(core, infrastructure)
   .dependsOn(
     kernel,
     logger,
-    infrastructure,
     database,
+    sql,
     memory
   )
 
@@ -172,7 +172,7 @@ lazy val infrastructure = (project in file("infrastructure"))
     scalacOptions ++= options
   )
   .aggregate(
-    database,
+    database
   )
 
 lazy val database = (project in file("infrastructure/database"))
@@ -182,7 +182,42 @@ lazy val database = (project in file("infrastructure/database"))
     scalacOptions ++= options
   )
   .aggregate(
+    sql,
     memory
+  )
+
+lazy val sql = (project in file("infrastructure/database/sql"))
+  .settings(commonSettings: _*)
+  .settings(
+    name := "database-sql",
+    scalacOptions ++= options,
+    libraryDependencies ++= Seq(
+      cats("cats-kernel"),
+      cats("cats-core"),
+      cats("cats-free"),
+      catsMtl,
+      catsEffect,
+      refined("refined"),
+      refined("refined-cats"),
+      ciris("ciris"),
+      ciris("ciris-refined"),
+      circe("circe-core"),
+      circe("circe-generic"),
+      circe("circe-parser"),
+      fs2("fs2-core"),
+      fs2("fs2-io"),
+      ciris("ciris"),
+      ciris("ciris-refined"),
+      doobie("doobie-core"),
+      doobie("doobie-hikari"),
+      doobie("doobie-postgres"),
+      skunk("skunk-core"),
+      skunk("skunk-circe")
+    )
+  )
+  .dependsOn(
+    kernel,
+    logger
   )
 
 lazy val memory = (project in file("infrastructure/database/memory"))
