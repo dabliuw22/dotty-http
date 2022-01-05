@@ -75,8 +75,7 @@ object consumer:
               .eval(S.get.map(_.get(message.getClass)))
               .flatMap {
                 case Some(handlers) =>
-                  fs2
-                    .Stream
+                  Stream
                     .emits(handlers)
                     .covary[F]
                     .flatMap { handler =>
