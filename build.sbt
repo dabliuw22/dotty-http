@@ -106,7 +106,9 @@ lazy val root = (project in file("."))
     logger,
     database,
     sql,
-    memory
+    memory,
+    message,
+    kafka
   )
 
 lazy val core = (project in file("core"))
@@ -137,9 +139,7 @@ lazy val kernel = (project in file("core/kernel"))
       circe("circe-generic"),
       circe("circe-parser"),
       ciris("ciris"),
-      jacksonScala,
-      jacksonModule("jackson-datatype-jdk8"),
-      jacksonModule("jackson-datatype-jsr310")
+      jacksonScala
     )
   )
 
@@ -172,7 +172,8 @@ lazy val infrastructure = (project in file("infrastructure"))
     scalacOptions ++= options
   )
   .aggregate(
-    database
+    database,
+    message
   )
 
 lazy val database = (project in file("infrastructure/database"))
@@ -243,6 +244,48 @@ lazy val memory = (project in file("infrastructure/database/memory"))
       redis("redis4cats-effects"),
       redis("redis4cats-streams"),
       redis("redis4cats-log4cats")
+    )
+  )
+  .dependsOn(
+    kernel,
+    logger
+  )
+
+lazy val message = (project in file("infrastructure/message-broker"))
+  .settings(commonSettings: _*)
+  .settings(
+    name := "message-broker",
+    scalacOptions ++= options
+  )
+  .aggregate(
+    kafka
+  )
+
+lazy val kafka = (project in file("infrastructure/message-broker/kafka"))
+  .settings(commonSettings: _*)
+  .settings(
+    name := "kafka",
+    scalacOptions ++= options,
+    libraryDependencies ++= Seq(
+      cats("cats-kernel"),
+      cats("cats-core"),
+      cats("cats-free"),
+      catsMtl,
+      catsEffect,
+      refined("refined"),
+      refined("refined-cats"),
+      ciris("ciris"),
+      ciris("ciris-refined"),
+      circe("circe-core"),
+      circe("circe-generic"),
+      circe("circe-parser"),
+      fs2("fs2-core"),
+      fs2("fs2-io"),
+      fs2Kafka("fs2-kafka"),
+      kafkaStreams,
+      jacksonScala,
+      jacksonModule("jackson-datatype-jdk8"),
+      jacksonModule("jackson-datatype-jsr310")
     )
   )
   .dependsOn(
