@@ -1,11 +1,14 @@
 package com.leysoft.infrastructure.database.memory
 
+import cats.MonadThrow
 import cats.effect.Async
 import cats.syntax.applicative.*
 import cats.syntax.apply.*
 import cats.syntax.flatMap.*
 import cats.syntax.functor.*
+import cats.syntax.monadError.*
 import com.leysoft.core.kernel.context.contextual.*
+import com.leysoft.core.kernel.error.data.*
 import com.leysoft.core.logger.Logger
 import fs2.Stream
 import dev.profunktor.redis4cats.RedisCommands
@@ -51,8 +54,16 @@ object Redis:
       inline def apply[A](using E: Encoder[A]): Encoder[A] =
         summon[Encoder[A]]
 
+   case class RedisError(message: String, code: String)
+       extends BusinessError(message, code)
+
+   object RedisError:
+      inline def apply(message: String): BusinessError =
+        RedisError(message, "00010")
+
    given [F[_]](using
      F: Async[F],
+     T: MonadThrow[F],
      R: RedisCommands[F, String, String]
    ): Redis[F] with
       given StructuredLogger[F] = Slf4jLogger.getLogger[F]
@@ -63,6 +74,7 @@ object Redis:
         Logger[F].info(s"hmGet: $key") *> R
           .hmGet(key, fields.distinct*)
           .map(Redis.Decoder[A].decode)
+          .adaptError(error => RedisError(error.getMessage))
       override def hmSet[A](using E: Redis.Encoder[A])(
         key: String,
         value: A
@@ -73,24 +85,33 @@ object Redis:
             .encode(value)
             .pure[F]
             .flatMap(R.hmSet(key, _))
+            .adaptError(error => RedisError(error.getMessage))
       override def hGet(
         key: String,
         field: String
       ): Contextual[F[Option[String]]] =
-        Logger[F].info(s"hGet: $key") *> R.hGet(key, field)
+        Logger[F].info(s"hGet: $key") *> R
+          .hGet(key, field)
+          .adaptError(error => RedisError(error.getMessage))
       override def hSet(
         key: String,
         field: String,
         value: String
       ): Contextual[F[Boolean]] =
-        Logger[F].info(s"hSet: $key") *> R.hSet(key, field, value)
+        Logger[F].info(s"hSet: $key") *> R
+          .hSet(key, field, value)
+          .adaptError(error => RedisError(error.getMessage))
       override def hDel(
         key: String,
         fields: String*
       ): Contextual[F[Long]] =
-        Logger[F].info(s"hDel: $key") *> R.hDel(key, fields.distinct*)
+        Logger[F].info(s"hDel: $key") *> R
+          .hDel(key, fields.distinct*)
+          .adaptError(error => RedisError(error.getMessage))
       override def expire(
         key: String,
         expiration: FiniteDuration
       ): Contextual[F[Boolean]] =
-        Logger[F].info(s"expire: $key") *> R.expire(key, expiration)
+        Logger[F].info(s"expire: $key") *> R
+          .expire(key, expiration)
+          .adaptError(error => RedisError(error.getMessage))
