@@ -29,7 +29,9 @@ object Dependencies {
   def redis(artifact: String): ModuleID =
     "dev.profunktor" %% artifact % "1.0.0"
   def http4s(artifact: String): ModuleID =
-    "org.http4s" %% artifact % "1.0.0-M29"
+    "org.http4s" %% artifact % "1.0.0-M30"
+  lazy val http4sJdkHttpClient = 
+    "org.http4s" %% "http4s-jdk-http-client" % "0.6.0-M7"
   def circe(artifact: String): ModuleID =
     "io.circe" %% artifact % "0.14.1"
   lazy val jacksonScala: ModuleID =
