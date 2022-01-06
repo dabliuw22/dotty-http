@@ -26,6 +26,6 @@ config/
 .metals/
 .bloop/
 .ammonite/
-project/metals.sbt
+metals.sbt
 project/project
 .vscode
