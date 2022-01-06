@@ -13,8 +13,6 @@ import eu.timepit.refined.types.string.NonEmptyString
 import natchez.Trace
 import natchez.Trace.Implicits.noop
 import skunk.{Session, SessionPool}
-import skunk.*
-import skunk.implicits.*
 
 object config:
    type ThreadSize = PosInt
