@@ -3,7 +3,6 @@ package com.leysoft.infrastructure.http.server
 import cats.effect.{Async, ExitCode, Resource}
 import cats.syntax.all.*
 import cats.syntax.semigroupk.*
-import com.leysoft.core.logger.algebra.ContextHandler
 import com.leysoft.infrastructure.http.server.middleware.ContextMiddleware
 import config.HttpServerConfiguration
 import org.http4s.HttpApp
@@ -17,8 +16,7 @@ import scala.concurrent.ExecutionContext
 
 object HttpServer:
    inline def make[F[_]](using
-     F: Async[F],
-     C: ContextHandler[F]
+     F: Async[F]
    ): ExecutionContext => HttpServerConfiguration => HttpApp[F] => F[
      ExitCode
    ] =
