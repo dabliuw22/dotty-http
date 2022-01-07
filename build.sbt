@@ -1,7 +1,7 @@
 import Dependencies._
 
 lazy val options = Seq(
-  "UTF-8",
+  //"UTF-8",
   "-feature", // emit warning and location for usages of features that should be imported explicitly
   "-deprecation", // emit warning and location for usages of deprecated APIs
   //"-explain",       // explain errors in more detail
@@ -104,6 +104,8 @@ lazy val root = (project in file("."))
   .dependsOn(
     kernel,
     logger,
+    http,
+    server,
     database,
     sql,
     memory,
@@ -172,8 +174,49 @@ lazy val infrastructure = (project in file("infrastructure"))
     scalacOptions ++= options
   )
   .aggregate(
+    http,
     database,
     message
+  )
+
+lazy val http = (project in file("infrastructure/http"))
+  .settings(commonSettings: _*)
+  .settings(
+    name := "http",
+    scalacOptions ++= options
+  )
+  .aggregate(
+    server
+  )
+
+lazy val server = (project in file("infrastructure/http/server"))
+  .settings(commonSettings: _*)
+  .settings(
+    name := "http-server",
+    scalacOptions ++= options,
+    libraryDependencies ++= Seq(
+      cats("cats-kernel"),
+      cats("cats-core"),
+      cats("cats-free"),
+      catsMtl,
+      catsEffect,
+      refined("refined"),
+      refined("refined-cats"),
+      ciris("ciris"),
+      ciris("ciris-refined"),
+      circe("circe-core"),
+      circe("circe-generic"),
+      circe("circe-parser"),
+      fs2("fs2-core"),
+      fs2("fs2-io"),
+      http4s("http4s-dsl"),
+      http4s("http4s-blaze-server"),
+      http4s("http4s-circe")
+    )
+  )
+  .dependsOn(
+    kernel,
+    logger
   )
 
 lazy val database = (project in file("infrastructure/database"))
