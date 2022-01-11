@@ -7,7 +7,6 @@ import cats.syntax.flatMap.*
 import cats.syntax.functor.*
 import com.leysoft.core.kernel.context.contextual.Contextual
 import com.leysoft.core.kernel.context.data.{Context, ContextId}
-import com.leysoft.core.logger.algebra.ContextHandler
 import org.http4s.{Header, Http, Request, Response}
 import org.typelevel.ci.*
 
