@@ -39,10 +39,10 @@ object config:
 
       def session[F[_]: Async]
         : Resource[F, RedisCommands[F, String, String]] =
-        for {
-          uriRedis <-
-            Resource.eval(RedisURI.make[F](config.server.toString))
-          client   <- RedisClient[F].fromUri(uriRedis)
-          codec = config.stringCodec
-          cmd <- InfraRedis[F].fromClient(client, codec)
-        } yield cmd
+        for
+           uriRedis <-
+             Resource.eval(RedisURI.make[F](config.server.toString))
+           client   <- RedisClient[F].fromUri(uriRedis)
+           codec = config.stringCodec
+           cmd <- InfraRedis[F].fromClient(client, codec)
+        yield cmd
