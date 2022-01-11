@@ -30,21 +30,3 @@ object ContextMiddleware:
         header = Header.Raw(XCorrelationId, context.id.value)
         response <- f(using context)
      yield response.putHeaders(header)
-
-   def apply[G[_], F[_]](
-     http: Http[G, F]
-   )(using G: Async[G], C: ContextHandler[G]): Http[G, F] =
-     Kleisli[G, Request[F], Response[F]] { request =>
-       for
-          context <-
-            request
-              .headers
-              .get(XCorrelationId)
-              .map(_.head)
-              .fold(C.create)(result =>
-                C.handle(Context.from(ContextId(result.value)))
-              )
-          header = Header.Raw(XCorrelationId, context.id.value)
-          response <- http(request.putHeaders(header))
-       yield response.putHeaders(header)
-     }
