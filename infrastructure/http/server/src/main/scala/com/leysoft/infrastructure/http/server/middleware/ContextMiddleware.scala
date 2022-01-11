@@ -14,19 +14,18 @@ import org.typelevel.ci.*
 object ContextMiddleware:
    private val XCorrelationId = ci"X-Correlation-Id"
 
-   def apply[F[_]: Async](request: Request[F])(
-     f: Contextual[F[Response[F]]]
-   ): F[Response[F]] =
-     for
-        context <-
-          request
-            .headers
-            .get(XCorrelationId)
-            .map(_.head)
-            .fold(Context.make)(result =>
-              Context.from(ContextId(result.value))
-            )
-            .pure[F]
-        header = Header.Raw(XCorrelationId, context.id.value)
-        response <- f(using context)
-     yield response.putHeaders(header)
+   extension [F[_]: Async](request: Request[F])
+     def handle(f: Contextual[F[Response[F]]]): F[Response[F]] =
+       for
+          context <-
+            request
+              .headers
+              .get(XCorrelationId)
+              .map(_.head)
+              .fold(Context.make)(result =>
+                Context.from(ContextId(result.value))
+              )
+              .pure[F]
+          header = Header.Raw(XCorrelationId, context.id.value)
+          response <- f(using context)
+       yield response.putHeaders(header)
