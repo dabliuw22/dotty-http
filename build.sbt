@@ -105,6 +105,7 @@ lazy val root = (project in file("."))
     kernel,
     logger,
     http,
+    httpKernel,
     server,
     database,
     sql,
@@ -186,7 +187,28 @@ lazy val http = (project in file("infrastructure/http"))
     scalacOptions ++= options
   )
   .aggregate(
+    httpKernel,
     server
+  )
+
+lazy val httpKernel = (project in file("infrastructure/http/kernel"))
+  .settings(commonSettings: _*)
+  .settings(
+    name := "http-kernel",
+    scalacOptions ++= options,
+    libraryDependencies ++= Seq(
+      cats("cats-kernel"),
+      cats("cats-core"),
+      cats("cats-free"),
+      catsMtl,
+      catsEffect,
+      fs2("fs2-core"),
+      http4s("http4s-dsl")
+    )
+  )
+  .dependsOn(
+    kernel,
+    logger
   )
 
 lazy val server = (project in file("infrastructure/http/server"))
@@ -216,7 +238,8 @@ lazy val server = (project in file("infrastructure/http/server"))
   )
   .dependsOn(
     kernel,
-    logger
+    logger,
+    httpKernel
   )
 
 lazy val database = (project in file("infrastructure/database"))
