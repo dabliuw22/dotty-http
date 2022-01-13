@@ -1,15 +1,12 @@
 package com.leysoft.infrastructure.http.server.middleware
 
-import cats.data.Kleisli
 import cats.effect.Async
-import cats.syntax.applicative.*
 import cats.syntax.flatMap.*
 import cats.syntax.functor.*
 import com.leysoft.core.kernel.context.contextual.Contextual
 import com.leysoft.core.kernel.context.data.*
 import com.leysoft.infrastructure.http.kernel.headers.*
-import org.http4s.{Http, Request, Response}
-import org.http4s.Header
+import org.http4s.{Request, Response}
 
 object ContextMiddleware:
    extension [F[_]: Async](request: Request[F])
