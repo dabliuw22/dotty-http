@@ -6,25 +6,15 @@ import cats.syntax.applicative.*
 import cats.syntax.flatMap.*
 import cats.syntax.functor.*
 import com.leysoft.core.kernel.context.contextual.Contextual
-import com.leysoft.core.kernel.context.data.{Context, ContextId}
-import org.http4s.{Header, Http, Request, Response}
-import org.typelevel.ci.*
+import com.leysoft.core.kernel.context.data.*
+import com.leysoft.infrastructure.http.kernel.headers.*
+import org.http4s.{Http, Request, Response}
+import org.http4s.Header
 
 object ContextMiddleware:
-   private val XCorrelationId = ci"X-Correlation-Id"
-
    extension [F[_]: Async](request: Request[F])
      def handle(f: Contextual[F[Response[F]]]): F[Response[F]] =
        for
-          context <-
-            request
-              .headers
-              .get(XCorrelationId)
-              .map(_.head)
-              .fold(Context.make)(result =>
-                Context.from(ContextId(result.value))
-              )
-              .pure[F]
-          header = Header.Raw(XCorrelationId, context.id.value)
-          response <- f(using context)
-       yield response.putHeaders(header)
+          context @ given Context <- request.getContext
+          response                <- f
+       yield response.withContext
