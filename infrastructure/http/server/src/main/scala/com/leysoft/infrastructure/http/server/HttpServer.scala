@@ -16,24 +16,25 @@ import scala.concurrent.ExecutionContext
 object HttpServer:
    inline def apply[F[_]](using
      F: Async[F]
-   ): ExecutionContext => HttpServerConfiguration => HttpApp[
+   ): HttpServerConfiguration ?=> ExecutionContext ?=> HttpApp[
      F
    ] => Resource[
      F,
      Server
    ] =
-     ctx =>
-       config =>
-         app =>
-           BlazeServerBuilder[F]
-             .withExecutionContext(ctx)
-             .bindHttp(config.port.value, config.host.value)
-             .withBanner(Seq.empty)
-             .withHttpApp(
-               CORS
-                 .policy
-                 .withAllowOriginAll
-                 .withAllowCredentials(false)
-                 .apply(app)
-             )
-             .resource
+     app =>
+       BlazeServerBuilder[F]
+         .withExecutionContext(summon[ExecutionContext])
+         .bindHttp(
+           summon[HttpServerConfiguration].port.value,
+           summon[HttpServerConfiguration].host.value
+         )
+         .withBanner(Seq.empty)
+         .withHttpApp(
+           CORS
+             .policy
+             .withAllowOriginAll
+             .withAllowCredentials(false)
+             .apply(app)
+         )
+         .resource
