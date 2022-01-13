@@ -26,14 +26,14 @@ object headers:
             Context.from(ContextId(result.value))
           )
           .pure[F]
-      @targetName("appendFromContext")
+      @targetName("append")
       def ++> (ctx: Context): Request[F] =
         request.putHeaders(ctx.headers)
       def withContext(using ctx: Context): Request[F] =
         request ++> ctx
 
    extension [F[_]: Applicative](response: Response[F])
-      @targetName("appendFromContext")
+      @targetName("append")
       def <++ (ctx: Context): Response[F] =
         response.putHeaders(ctx.headers)
       def withContext(using ctx: Context): Response[F] =
