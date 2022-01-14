@@ -36,7 +36,11 @@ object consumer:
       private def reduce(
         message: CommittableConsumerRecord[F, String, Message]
       ) =
-        S.execute(message.record.value)
+        Stream
+          .emit(message)
+          .map(_.record)
+          .map(_.value)
+          .flatMap(S.execute)
           .fold(())((_, _) => ())
           .as(message)
 
