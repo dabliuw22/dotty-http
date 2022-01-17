@@ -31,7 +31,7 @@ object consumer:
           .evalTap(_.subscribeTo(channels.head, channels.tail*))
           .flatMap(_.stream)
           .flatMap(reduce)
-          .map(message => message.offset)
+          .map(_.offset)
           .through(commitBatchWithin(100, 500 milliseconds))
       private def reduce(
         message: CommittableConsumerRecord[F, String, Message]
