@@ -7,8 +7,8 @@ import cats.syntax.flatMap.*
 import cats.syntax.functor.*
 import com.leysoft.core.kernel.context.data.Context
 import com.leysoft.core.kernel.context.contextual.ContextualStream
-import com.leysoft.core.kernel.message.data.Message
-import com.leysoft.core.kernel.message.{Handler, Consumer}
+import com.leysoft.core.kernel.message.data.*
+import com.leysoft.core.kernel.message.*
 import com.leysoft.core.logger.Logger
 import fs2.kafka.*
 import fs2.Stream
@@ -58,7 +58,10 @@ object consumer:
 
       type State[F[_]] = Ref[F, Map[Class[?], List[Handler[F]]]]
 
-      given [F[_]: Async](using S: State[F]): ConsumerState[F] with
+      given [F[_]: Async](using
+        S: State[F],
+        P: Producer[F]
+      ): ConsumerState[F] with
          given StructuredLogger[F] = Slf4jLogger.getLogger[F]
          override def register[A <: Message](
            key: Class[A],
@@ -83,8 +86,7 @@ object consumer:
                     .emits(handlers)
                     .covary[F]
                     .flatMap { handler =>
-                      handler
-                        .execute(message)
+                      handle(message)(handler)
                         .handleErrorWith(e =>
                           error(
                             s"Handler: ${handler.getClass}, error consuming: ${message.getClass}",
@@ -97,6 +99,16 @@ object consumer:
                     s"Error: There are no handlers for: ${message.getClass}"
                   )
               }
+         private def handle[A <: Message](
+           message: A
+         )(handler: Handler[F]): ContextualStream[F, Unit] =
+           handler
+             .execute(message)
+             .evalMap(result =>
+               if result.getClass.equals(message.getClass) then
+                  ().pure[F]
+               else P.execute(result).as(())
+             )
          private def error(
            message: String
          ): ContextualStream[F, Unit] =
