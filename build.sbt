@@ -107,6 +107,7 @@ lazy val root = (project in file("."))
     http,
     httpKernel,
     server,
+    client,
     database,
     sql,
     memory,
@@ -188,7 +189,8 @@ lazy val http = (project in file("infrastructure/http"))
   )
   .aggregate(
     httpKernel,
-    server
+    server,
+    client
   )
 
 lazy val httpKernel = (project in file("infrastructure/http/kernel"))
@@ -233,6 +235,38 @@ lazy val server = (project in file("infrastructure/http/server"))
       fs2("fs2-io"),
       http4s("http4s-dsl"),
       http4s("http4s-blaze-server"),
+      http4s("http4s-circe")
+    )
+  )
+  .dependsOn(
+    kernel,
+    logger,
+    httpKernel
+  )
+
+lazy val client = (project in file("infrastructure/http/client"))
+  .settings(commonSettings: _*)
+  .settings(
+    name := "http-client",
+    scalacOptions ++= options,
+    libraryDependencies ++= Seq(
+      cats("cats-kernel"),
+      cats("cats-core"),
+      cats("cats-free"),
+      catsMtl,
+      catsEffect,
+      refined("refined"),
+      refined("refined-cats"),
+      ciris("ciris"),
+      ciris("ciris-refined"),
+      circe("circe-core"),
+      circe("circe-generic"),
+      circe("circe-parser"),
+      fs2("fs2-core"),
+      fs2("fs2-io"),
+      http4s("http4s-dsl"),
+      http4s("http4s-blaze-client"),
+      http4sJdkHttpClient,
       http4s("http4s-circe")
     )
   )
