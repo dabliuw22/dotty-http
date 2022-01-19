@@ -11,11 +11,13 @@ import org.http4s.implicits.*
 import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.server.middleware.CORS
 import org.http4s.server.Server
+import org.typelevel.log4cats.Logger
 import scala.concurrent.ExecutionContext
 
 object HttpServer:
    inline def apply[F[_]](using
-     F: Async[F]
+     F: Async[F],
+     L: Logger[F]
    ): HttpServerConfiguration ?=> ExecutionContext ?=> HttpApp[
      F
    ] => Resource[
@@ -38,3 +40,5 @@ object HttpServer:
              .apply(app)
          )
          .resource
+         .preAllocate(Logger[F].info("Start Server..."))
+         .onFinalize(Logger[F].info("End Server..."))
