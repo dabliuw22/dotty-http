@@ -40,5 +40,5 @@ object HttpServer:
              .apply(app)
          )
          .resource
-         .preAllocate(Logger[F].info("Start Server..."))
-         .onFinalize(Logger[F].info("End Server..."))
+         .preAllocate(Logger[F].info("Acquire Server..."))
+         .onFinalize(Logger[F].info("Release Server..."))
