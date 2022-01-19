@@ -235,7 +235,8 @@ lazy val server = (project in file("infrastructure/http/server"))
       fs2("fs2-io"),
       http4s("http4s-dsl"),
       http4s("http4s-blaze-server"),
-      http4s("http4s-circe")
+      http4s("http4s-circe"),
+      log4Cats("log4cats-core")
     )
   )
   .dependsOn(
