@@ -50,14 +50,14 @@ object Dependencies {
     "org.apache.kafka" % "kafka-streams" % "3.0.0"
   def ciris(artifact: String): ModuleID =
     "is.cir" %% artifact % "2.3.1"
-  lazy val scalatest: ModuleID =
-    "org.scalatest" %% "scalatest" % "3.2.10"
-  lazy val scalacheck: ModuleID =
-    "org.scalacheck" %% "scalacheck" % "1.15.4"
   lazy val catsEffectTesting: ModuleID =
     "org.typelevel" %% "cats-effect-testing-scalatest" % "1.4.0"
-  lazy val munit: ModuleID =
-    "org.typelevel" %% "munit-cats-effect-3" % "1.0.6"
   lazy val groovy: ModuleID =
     "org.codehaus.groovy" % "groovy-all" % "3.0.9"
+  lazy val scalatest: ModuleID = "org.scalatest" %% "scalatest" % "3.2.10"
+  lazy val scalacheck: ModuleID =
+    "org.scalacheck" %% "scalacheck" % "1.15.4"
+  lazy val munit: ModuleID =
+    "org.typelevel" %% "munit-cats-effect-3" % "1.0.6"
+  def weaver(artifact: String): ModuleID = "com.disneystreaming" %% artifact % "0.7.7"
 }
