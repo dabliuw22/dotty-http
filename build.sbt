@@ -1,45 +1,42 @@
 import Dependencies._
 
 lazy val options = Seq(
-  //"UTF-8",
   "-feature", // emit warning and location for usages of features that should be imported explicitly
   "-deprecation", // emit warning and location for usages of deprecated APIs
-  //"-explain",       // explain errors in more detail
-  //"-explain-types", // explain type errors in more detail
-  //"-indent",        // allow significant indentation.
-  //"-new-syntax",    // require `then` and `do` in control expressions.
-  //"-print-lines",   // show source code line numbers.
   "-unchecked", // enable additional warnings where generated code depends on assumptions
-  //"-Ykind-projector", // allow `*` as wildcard to be compatible with kind projector
-  //"-source:future", // for { (x, given String) <- eff }
-  //"-Xfatal-warnings", // fail the compilation if there are any warnings
-  //"-Xmigration", // warn about constructs whose behavior may have changed since version
   "-language:postfixOps",
   "-language:higherKinds" // or import scala.language.higherKinds
 )
 
 lazy val jvmOptions = Seq()
 
+lazy val testsFrameworks = Seq(
+  new TestFramework("weaver.framework.CatsEffect")
+)
+
 lazy val commonSettings = Seq(
-  version                               := "0.1",
-  organization                          := "com.leysoft",
-  scalaVersion                          := scala3Version,
-  scalacOptions                         := options,
-  javaOptions                           := jvmOptions,
-  fork in Test                          := true,
-  testForkedParallel in Test            := true,
-  parallelExecution in Test             := true,
-  fork in IntegrationTest               := true,
-  testForkedParallel in IntegrationTest := true,
-  parallelExecution in IntegrationTest  := false,
-  scalaSource in Test := baseDirectory.value / "src/test/scala",
-  scalaSource in IntegrationTest := baseDirectory.value / "src/it/scala",
-  scalafmtOnCompile in ThisBuild    := true,
-  autoCompilerPlugins in ThisBuild  := true,
-  assemblyMergeStrategy in assembly := {
+  version                              := "0.1",
+  organization                         := "com.leysoft",
+  scalaVersion                         := scala3Version,
+  scalacOptions                        := options,
+  javaOptions                          := jvmOptions,
+  Test / fork                          := true,
+  Test / testForkedParallel            := true,
+  Test / parallelExecution             := true,
+  Test / scalaSource := baseDirectory.value / "src/test/scala",
+  ThisBuild / scalafmtOnCompile    := true,
+  ThisBuild / autoCompilerPlugins  := true,
+  assembly / assemblyMergeStrategy := {
     case PathList("META-INF",_ @ _*) => MergeStrategy.discard
-    case _                         => MergeStrategy.first
+    case _                           => MergeStrategy.first
   }
+)
+
+lazy val itSettings = Seq(
+  IntegrationTest / fork               := true,
+  IntegrationTest / testForkedParallel := true,
+  IntegrationTest / parallelExecution  := false,
+  IntegrationTest / scalaSource        := baseDirectory.value / "src/it/scala",
 )
 
 lazy val plugins =
@@ -85,12 +82,13 @@ lazy val root = (project in file("."))
       http4s("http4s-dsl"),
       http4s("http4s-blaze-server"),
       http4s("http4s-blaze-client"),
-      http4s("http4s-circe")
+      http4s("http4s-circe"),
+      groovy
     ),
-    mainClass in Compile        := Some("com.leysoft.ContextualMain"),
-    mainClass in assembly       := Some("com.leysoft.ContextualMain"),
-    assemblyJarName in assembly := "main.jar",
-    flywayUrl                   := sys
+    Compile / mainClass        := Some("com.leysoft.ContextualMain"),
+    assembly / mainClass       := Some("com.leysoft.ContextualMain"),
+    assembly / assemblyJarName := "main.jar",
+    flywayUrl                  := sys
       .env
       .getOrElse(
         "DATABASE_URL",
@@ -218,6 +216,7 @@ lazy val server = (project in file("infrastructure/http/server"))
   .settings(
     name := "http-server",
     scalacOptions ++= options,
+    testFrameworks ++= testsFrameworks,
     libraryDependencies ++= Seq(
       cats("cats-kernel"),
       cats("cats-core"),
@@ -236,7 +235,9 @@ lazy val server = (project in file("infrastructure/http/server"))
       http4s("http4s-dsl"),
       http4s("http4s-blaze-server"),
       http4s("http4s-circe"),
-      log4Cats("log4cats-core")
+      log4Cats("log4cats-core"),
+      scalatest % Test,
+      weaver("weaver-cats") % Test
     )
   )
   .dependsOn(
@@ -250,6 +251,7 @@ lazy val client = (project in file("infrastructure/http/client"))
   .settings(
     name := "http-client",
     scalacOptions ++= options,
+    testFrameworks ++= testsFrameworks,
     libraryDependencies ++= Seq(
       cats("cats-kernel"),
       cats("cats-core"),
@@ -268,7 +270,11 @@ lazy val client = (project in file("infrastructure/http/client"))
       http4s("http4s-dsl"),
       http4s("http4s-blaze-client"),
       http4sJdkHttpClient,
-      http4s("http4s-circe")
+      http4s("http4s-circe"),
+      scalatest % Test,
+      scalacheck % Test,
+      weaver("weaver-cats") % Test,
+      weaver("weaver-scalacheck") % Test
     )
   )
   .dependsOn(
