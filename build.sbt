@@ -15,15 +15,15 @@ lazy val testsFrameworks = Seq(
 )
 
 lazy val commonSettings = Seq(
-  version                              := "0.1",
-  organization                         := "com.leysoft",
-  scalaVersion                         := scala3Version,
-  scalacOptions                        := options,
-  javaOptions                          := jvmOptions,
-  Test / fork                          := true,
-  Test / testForkedParallel            := true,
-  Test / parallelExecution             := true,
-  Test / scalaSource := baseDirectory.value / "src/test/scala",
+  version                          := "0.1",
+  organization                     := "com.leysoft",
+  scalaVersion                     := scala3Version,
+  scalacOptions                    := options,
+  javaOptions                      := jvmOptions,
+  Test / fork                      := true,
+  Test / testForkedParallel        := true,
+  Test / parallelExecution         := true,
+  Test / scalaSource               := baseDirectory.value / "src/test/scala",
   ThisBuild / scalafmtOnCompile    := true,
   ThisBuild / autoCompilerPlugins  := true,
   assembly / assemblyMergeStrategy := {
