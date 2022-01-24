@@ -141,7 +141,9 @@ lazy val kernel = (project in file("core/kernel"))
       circe("circe-generic"),
       circe("circe-parser"),
       ciris("ciris"),
-      jacksonScala
+      jacksonScala,
+      scalatest % Test,
+      scalacheck % Test,
     )
   )
 
@@ -207,7 +209,7 @@ lazy val httpKernel = (project in file("infrastructure/http/kernel"))
     )
   )
   .dependsOn(
-    kernel,
+    kernel % "compile->compile;test->test",
     logger
   )
 
@@ -241,9 +243,9 @@ lazy val server = (project in file("infrastructure/http/server"))
     )
   )
   .dependsOn(
-    kernel,
+    kernel % "compile->compile;test->test",
     logger,
-    httpKernel
+    httpKernel % "compile->compile;test->test"
   )
 
 lazy val client = (project in file("infrastructure/http/client"))
@@ -278,9 +280,9 @@ lazy val client = (project in file("infrastructure/http/client"))
     )
   )
   .dependsOn(
-    kernel,
+    kernel % "compile->compile;test->test",
     logger,
-    httpKernel
+    httpKernel  % "compile->compile;test->test"
   )
 
 lazy val database = (project in file("infrastructure/database"))
@@ -324,7 +326,7 @@ lazy val sql = (project in file("infrastructure/database/sql"))
     )
   )
   .dependsOn(
-    kernel,
+    kernel % "compile->compile;test->test",
     logger
   )
 
@@ -354,7 +356,7 @@ lazy val memory = (project in file("infrastructure/database/memory"))
     )
   )
   .dependsOn(
-    kernel,
+    kernel % "compile->compile;test->test",
     logger
   )
 
@@ -396,7 +398,7 @@ lazy val kafka = (project in file("infrastructure/message-broker/kafka"))
     )
   )
   .dependsOn(
-    kernel,
+    kernel % "compile->compile;test->test",
     logger
   )
 
