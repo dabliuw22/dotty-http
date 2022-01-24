@@ -18,6 +18,7 @@
     <logger name="com.zaxxer.hikari" level="INFO"/>
     <logger name="io.lettuce.core" level="INFO"/>
     <logger name="io.netty" level="INFO"/>
+    <logger name="org.apache.kafka" level="INFO"/>
     <logger name="org.http4s" level="INFO"/>
     <root level="all">
         <appender-ref ref="stdOut"/>
