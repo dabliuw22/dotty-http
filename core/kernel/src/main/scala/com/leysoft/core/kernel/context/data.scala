@@ -7,9 +7,10 @@ import com.leysoft.core.kernel.newtype.instances.given
 import io.circe.{Decoder, Encoder}
 import io.circe.syntax.*
 import io.circe.Codec
+import fs2.Stream
+
 import java.time.ZonedDateTime
 import java.util.UUID
-import fs2.Stream
 
 object data:
    /*
@@ -58,4 +59,3 @@ object data:
 
       inline def from(id: ContextId): Context =
         Context(id, ContextCreatedAt.make)
-end data
