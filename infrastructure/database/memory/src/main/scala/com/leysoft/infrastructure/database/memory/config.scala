@@ -14,6 +14,7 @@ import dev.profunktor.redis4cats.data.RedisCodec
 import dev.profunktor.redis4cats.effect.Log.NoOp.*
 import dev.profunktor.redis4cats.Redis as InfraRedis
 import eu.timepit.refined.types.string.NonEmptyString
+import org.typelevel.log4cats.Logger
 
 object config:
    enum Codec:
@@ -37,12 +38,16 @@ object config:
         config.codec match
            case Codec.Utf8 => RedisCodec.Utf8
 
-      def session[F[_]: Async]
-        : Resource[F, RedisCommands[F, String, String]] =
+      def session[F[_]: Async](using
+        L: Logger[F]
+      ): Resource[F, RedisCommands[F, String, String]] =
         for
            uriRedis <-
              Resource.eval(RedisURI.make[F](config.server.toString))
            client   <- RedisClient[F].fromUri(uriRedis)
            codec = config.stringCodec
-           cmd <- InfraRedis[F].fromClient(client, codec)
+           cmd <- InfraRedis[F]
+                    .fromClient(client, codec)
+                    .preAllocate(L.info("Acquire RedisCommands..."))
+                    .onFinalize(L.info("Release RedisCommands..."))
         yield cmd
