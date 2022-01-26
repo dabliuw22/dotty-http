@@ -1,6 +1,6 @@
 package com.leysoft.infrastructure.database.memory
 
-import cats.effect.{Async, Resource, Spawn}
+import cats.effect.{Async, Resource}
 import com.leysoft.core.kernel.env.FromEnv
 import com.leysoft.infrastructure.database.memory.config.RedisConfiguration
 import com.leysoft.infrastructure.database.memory.instances.given
