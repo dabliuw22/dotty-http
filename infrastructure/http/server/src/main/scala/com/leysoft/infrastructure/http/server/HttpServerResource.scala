@@ -4,21 +4,23 @@ import cats.effect.{Async, ExitCode, Resource}
 import cats.syntax.functor.*
 import cats.syntax.semigroupk.*
 import com.leysoft.infrastructure.http.server.middleware.ContextMiddleware
+import com.leysoft.infrastructure.http.server.routes.HealthRoute
 import config.HttpServerConfiguration
-import org.http4s.HttpApp
+import org.http4s.{HttpApp, HttpRoutes}
 import org.http4s.blaze.server.*
 import org.http4s.implicits.*
 import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.server.middleware.CORS
 import org.http4s.server.Server
 import org.typelevel.log4cats.Logger
+
 import scala.concurrent.ExecutionContext
 
-object HttpServer:
+object HttpServerResource:
    inline def apply[F[_]](using
      F: Async[F],
      L: Logger[F]
-   ): HttpServerConfiguration ?=> ExecutionContext ?=> HttpApp[
+   ): HttpServerConfiguration ?=> ExecutionContext ?=> HttpRoutes[
      F
    ] => Resource[
      F,
@@ -37,7 +39,7 @@ object HttpServer:
              .policy
              .withAllowOriginAll
              .withAllowCredentials(false)
-             .apply(app)
+             .apply((HealthRoute[F].routes <+> app).orNotFound)
          )
          .resource
          .preAllocate(Logger[F].info("Acquire Server..."))
