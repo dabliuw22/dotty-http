@@ -87,7 +87,6 @@ object instances:
           s"expectOr: ${request.method.name}: ${request.uri}"
         ) *> C
           .expectOr(request.withContext.pure[F])(onError)
-          .adaptError(error => HttpClientError(error.getMessage))
       override def expectOptionOr[A](request: Request[F])(
         onError: Response[F] => F[Throwable]
       )(using D: EntityDecoder[F, A]): Contextual[F[Option[A]]] =
@@ -95,7 +94,6 @@ object instances:
           s"expectOptionOr: ${request.method.name}: ${request.uri}"
         ) *> C
           .expectOptionOr(request.withContext)(onError)
-          .adaptError(error => HttpClientError(error.getMessage))
       override def stream(
         request: Request[F]
       ): ContextualStream[F, Response[F]] =
