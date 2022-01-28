@@ -1,6 +1,6 @@
 package com.leysoft.infrastructure.database.sql.skunk
 
-import cats.effect.{Concurrent, Async, Resource}
+import cats.effect.{Async, Concurrent, Resource}
 import cats.effect.std.Console
 import cats.syntax.parallel.*
 import ciris.*
@@ -12,6 +12,7 @@ import eu.timepit.refined.types.net.UserPortNumber
 import eu.timepit.refined.types.string.NonEmptyString
 import natchez.Trace
 import natchez.Trace.Implicits.noop
+import org.typelevel.log4cats.Logger
 import skunk.{Session, SessionPool}
 
 object config:
@@ -61,12 +62,18 @@ object config:
           password = Some(conf.password.value),
           database = conf.database.value
         )
-      def pool[F[_]: Async: Console]: SessionPool[F]            =
-        Session.pooled(
-          host = conf.host,
-          port = conf.port,
-          user = conf.user,
-          password = Some(conf.password),
-          database = conf.database,
-          max = conf.threadSize
-        )
+      def pool[F[_]: Async: Console](using
+        L: Logger[F]
+      ): Resource[F, Session[F]] =
+        Session
+          .pooled(
+            host = conf.host,
+            port = conf.port,
+            user = conf.user,
+            password = Some(conf.password),
+            database = conf.database,
+            max = conf.threadSize
+          )
+          .flatMap(identity)
+          .preAllocate(L.info("Acquire Session..."))
+          .onFinalize(L.info("Release Session..."))
