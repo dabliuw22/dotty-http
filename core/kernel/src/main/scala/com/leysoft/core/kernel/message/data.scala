@@ -9,7 +9,7 @@ import java.util.UUID
 
 object data:
    case class MessageChannel(value: String)
-   case class MessageKey(value: String)
+   case class MessageKey(value: String = UUID.randomUUID.toString)
    case class MessageCreatedAt(
      value: ZonedDateTime = ZonedDateTime.now
    )
