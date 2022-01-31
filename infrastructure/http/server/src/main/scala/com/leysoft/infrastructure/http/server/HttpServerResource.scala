@@ -1,6 +1,6 @@
 package com.leysoft.infrastructure.http.server
 
-import cats.effect.{Async, ExitCode, Resource}
+import cats.effect.{Async, Resource}
 import cats.syntax.functor.*
 import cats.syntax.semigroupk.*
 import com.leysoft.infrastructure.http.server.middleware.ContextMiddleware
