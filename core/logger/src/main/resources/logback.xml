@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <property scope="context" name="service_name" value="dotty-http"/>
+    <!-- <property scope="context" name="service_name" value="dotty-http"/> !-->
     <appender name="stdOut" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%highlight([%level]) [%date{HH:mm:ss.SSS}] [${service_name}] %magenta([%thread]) [%logger] %highlight([%mdc]) %message %n%throwable</pattern>
+            <pattern>%highlight([%level]) [%date{HH:mm:ss.SSS}] %magenta([%thread]) [%logger] %highlight([%mdc]) %message %n%throwable</pattern>
+            <!--<pattern>%highlight([%level]) [%date{HH:mm:ss.SSS}] [${service_name}] %magenta([%thread]) [%logger] %highlight([%mdc]) %message %n%throwable</pattern> !-->
         </encoder>
     </appender>
     <appender name="jsonFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -14,12 +15,15 @@
         </rollingPolicy>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
-    <logger name="ch.qos.logback" level="WARN"/>
-    <logger name="com.zaxxer.hikari" level="INFO"/>
-    <logger name="io.lettuce.core" level="INFO"/>
-    <logger name="io.netty" level="INFO"/>
-    <logger name="org.apache.kafka" level="INFO"/>
-    <logger name="org.http4s" level="INFO"/>
+    <logger name="ch.qos.logback" level="ERROR"/>
+    <logger name="com.zaxxer.hikari" level="ERROR"/>
+    <logger name="io.lettuce.core" level="ERROR"/>
+    <logger name="io.netty" level="ERROR"/>
+    <logger name="org.apache" level="ERROR"/>
+    <logger name="org.apache.kafka.clients.consumer.ConsumerConfig" level="ERROR"/>
+    <logger name="org.apache.kafka.clients.producer.ProducerConfig" level="ERROR"/>
+    <logger name="fs2.kafka" level="ERROR"/>
+    <logger name="org.http4s" level="ERROR"/>
     <root level="all">
         <appender-ref ref="stdOut"/>
         <appender-ref ref="jsonFile"/>
