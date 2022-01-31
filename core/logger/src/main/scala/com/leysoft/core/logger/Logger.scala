@@ -26,8 +26,7 @@ object Logger:
    extension (ctx: Context)
      inline def toMap: Map[String, String] =
        Map(
-         "trace"     -> ctx.id.value.show,
-         "createdAt" -> ctx.createdAt.value.show
+         "correlation-id" -> ctx.id.value.show
        )
 
    given ctxLogger[F[_]: Sync: StructuredLogger]: Logger[F] with
