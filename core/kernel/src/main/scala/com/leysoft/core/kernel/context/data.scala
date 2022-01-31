@@ -35,19 +35,8 @@ object data:
    object ContextId:
       inline def make: ContextId = ContextId(UUID.randomUUID.toString)
 
-   case class ContextCreatedAt(value: ZonedDateTime)
-       derives Eq,
-         Show,
-         Order,
-         Codec.AsObject
-   object ContextCreatedAt:
-      inline def make: ContextCreatedAt = ContextCreatedAt(
-        ZonedDateTime.now
-      )
-
    case class Context(
-     id: ContextId,
-     createdAt: ContextCreatedAt
+     id: ContextId
    ) derives Eq,
          Show,
          Order,
@@ -55,7 +44,7 @@ object data:
 
    object Context:
       inline def make: Context =
-        Context(ContextId.make, ContextCreatedAt.make)
+        Context(ContextId.make)
 
       inline def from(id: ContextId): Context =
-        Context(id, ContextCreatedAt.make)
+        Context(id)
