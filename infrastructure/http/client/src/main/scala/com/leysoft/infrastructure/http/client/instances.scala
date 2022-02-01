@@ -16,23 +16,47 @@ import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
 import org.http4s.{EntityDecoder, MediaType, Request, Response, Status, Uri}
 import org.http4s.Method.*
+import org.typelevel.log4cats.Logger as Logger4Cats
 import org.typelevel.log4cats.StructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import java.net.http.HttpClient as JavaHttpClient
 
 object instances:
-   inline def blaze[F[_]](using F: Async[F]): Resource[F, Client[F]] =
-     BlazeClientBuilder[F].resource
+   extension (backend: HttpBackend)
+     def client[F[_]](using
+       F: Async[F],
+       L: Logger4Cats[F]
+     ): Resource[F, Client[F]] =
+       backend match
+          case HttpBackend.Blaze => blaze[F]
+          case HttpBackend.Jdk   => jdkHttp[F]
+
+   inline def blaze[F[_]](using
+     F: Async[F],
+     L: Logger4Cats[F]
+   ): Resource[F, Client[F]] =
+     BlazeClientBuilder[F]
+       .resource
+       .preAllocate(L.info("Acquire HttpClient[Blaze]..."))
+       .onFinalize(L.info("Release HttpClient[Blaze]..."))
 
    inline def jdkHttp[F[_]](using
-     F: Async[F]
+     F: Async[F],
+     L: Logger4Cats[F]
    ): Resource[F, Client[F]] =
-     JdkHttpClient.simple[F]
+     JdkHttpClient
+       .simple[F]
+       .preAllocate(L.info("Acquire HttpClient[Jdk]..."))
+       .onFinalize(L.info("Release Jdk..."))
 
-   inline def jdkHttp[F[_]](client: JavaHttpClient)(using
-     F: Async[F]
-   ): Resource[F, Client[F]] =
-     JdkHttpClient.apply(client)
+   inline def jdkHttp[F[_]](using
+     F: Async[F],
+     L: Logger4Cats[F]
+   )(client: JavaHttpClient): Resource[F, Client[F]] =
+     JdkHttpClient
+       .apply(client)
+       .preAllocate(L.info("Acquire HttpClient[Jdk]..."))
+       .onFinalize(L.info("Release HttpClient[Jdk]..."))
 
    private class DefaultHttpClient[F[_]](using
      F: Async[F],
