@@ -47,7 +47,7 @@ object instances:
      JdkHttpClient
        .simple[F]
        .preAllocate(L.info("Acquire HttpClient[Jdk]..."))
-       .onFinalize(L.info("Release Jdk..."))
+       .onFinalize(L.info("Release HttpClient[Jdk]..."))
 
    inline def jdkHttp[F[_]](using
      F: Async[F],
