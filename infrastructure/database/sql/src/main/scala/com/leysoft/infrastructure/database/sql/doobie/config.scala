@@ -11,6 +11,7 @@ import eu.timepit.refined.auto.*
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.numeric.Interval
 import eu.timepit.refined.types.string.NonEmptyString
+import org.typelevel.log4cats.Logger
 
 object config:
    type ThreadSize = Int Refined Interval.Open[0, 100]
@@ -47,15 +48,20 @@ object config:
            }.resource
 
    extension (conf: DoobieConfiguration)
-     def transactor[F[_]: Async]: Resource[F, HikariTransactor[F]] =
+     def transactor[F[_]: Async](using
+       L: Logger[F]
+     ): Resource[F, HikariTransactor[F]] =
        for
           context <-
             ExecutionContexts.fixedThreadPool[F](conf.threadSize)
-          hikari  <- HikariTransactor.newHikariTransactor[F](
-                       driverClassName = conf.driver,
-                       url = conf.url,
-                       user = conf.user,
-                       pass = conf.password,
-                       connectEC = context
-                     )
+          hikari  <- HikariTransactor
+                       .newHikariTransactor[F](
+                         driverClassName = conf.driver,
+                         url = conf.url,
+                         user = conf.user,
+                         pass = conf.password,
+                         connectEC = context
+                       )
+                       .preAllocate(L.info("Acquire Transactor..."))
+                       .onFinalize(L.info("Release Transactor..."))
        yield hikari
