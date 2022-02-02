@@ -37,7 +37,7 @@ object Dependencies {
   lazy val jacksonScala: ModuleID =
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.0"
   def jacksonModule(artifact: String): ModuleID =
-    "com.fasterxml.jackson.datatype" % artifact % "2.13.0"
+    "com.fasterxml.jackson.datatype" % artifact % "2.13.1"
   def log4Cats(artifact: String): ModuleID =
     "org.typelevel" %% artifact % "2.1.1"
   lazy val logback: ModuleID =
