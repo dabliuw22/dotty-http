@@ -14,13 +14,13 @@ import eu.timepit.refined.types.net.UserPortNumber
 import eu.timepit.refined.types.string.NonEmptyString
 import fs2.kafka.*
 import org.apache.kafka.clients.producer.ProducerConfig
+import org.typelevel.log4cats.Logger
+
 import scala.concurrent.duration.*
-import serde.*
 
 object config:
    case class ProducerConfiguration(
      server: NonEmptyString,
-     clientId: NonEmptyString,
      linger: FiniteDuration,
      batchSize: PosInt,
      idempotence: Boolean,
@@ -34,7 +34,6 @@ object config:
          override def load: Resource[F, ProducerConfiguration] =
            (
              env("KAFKA_SERVER").as[NonEmptyString],
-             env("KAFKA_CLIENT_ID").as[NonEmptyString],
              env("KAFKA_LINGER_MS")
                .as[PosInt]
                .map(millis =>
@@ -49,7 +48,6 @@ object config:
            ).parMapN {
              (
                server,
-               clientId,
                linger,
                batchSize,
                idempotence,
@@ -59,7 +57,6 @@ object config:
              ) =>
                ProducerConfiguration(
                  server,
-                 clientId,
                  linger,
                  batchSize,
                  idempotence,
@@ -70,14 +67,16 @@ object config:
            }.resource
 
    extension (config: ProducerConfiguration)
-     def settings[F[_]: Async]
-       : Resource[F, ProducerSettings[F, String, Message]] =
+     def settings[F[_]: Async, K, V](clientId: String)(
+       key: Serializer[F, K],
+       value: Serializer[F, V]
+     ): Resource[F, ProducerSettings[F, K, V]] =
        Resource.make(
          ProducerSettings(
-           keySerializer = keySerializer,
-           valueSerializer = valueSerializer
+           keySerializer = key,
+           valueSerializer = value
          ).withBootstrapServers(config.server)
-           .withClientId(config.clientId)
+           .withClientId(clientId)
            .withBatchSize(config.batchSize)
            .withLinger(config.linger)
            .withEnableIdempotence(config.idempotence)
@@ -95,9 +94,17 @@ object config:
            .pure[F]
        )(_ => ().pure[F])
 
+   extension [F[_]: Async, K, V](settings: ProducerSettings[F, K, V])
+     def kafka(using
+       L: Logger[F]
+     ): Resource[F, KafkaProducer[F, K, V]] =
+       KafkaProducer
+         .resource[F, K, V](settings)
+         .preAllocate(L.info("Acquire Producer..."))
+         .onFinalize(L.info("Release Producer..."))
+
    case class ConsumerConfiguration(
      server: NonEmptyString,
-     groupId: NonEmptyString,
      autoCommit: Boolean
    )
 
@@ -106,23 +113,33 @@ object config:
          override def load: Resource[F, ConsumerConfiguration] =
            (
              env("KAFKA_SERVER").as[NonEmptyString],
-             env("KAFKA_GROUP_ID").as[NonEmptyString],
              env("KAFKA_AUTO_COMMIT").as[Boolean]
-           ).parMapN { (server, groupId, autoCommit) =>
-             ConsumerConfiguration(server, groupId, autoCommit)
+           ).parMapN { (server, autoCommit) =>
+             ConsumerConfiguration(server, autoCommit)
            }.resource
 
    extension (config: ConsumerConfiguration)
-     def settings[F[_]: Async]
-       : Resource[F, ConsumerSettings[F, String, Message]] =
+     def settings[F[_]: Async, K, V](groupId: String)(
+       key: Deserializer[F, K],
+       value: Deserializer[F, V]
+     ): Resource[F, ConsumerSettings[F, K, V]] =
        Resource.make(
          ConsumerSettings(
-           keyDeserializer = keyDeserializer,
-           valueDeserializer = valueDeserializer
+           keyDeserializer = key,
+           valueDeserializer = value
          ).withBootstrapServers(config.server)
-           .withGroupId(config.groupId)
+           .withGroupId(groupId)
            .withEnableAutoCommit(config.autoCommit)
            .withAutoOffsetReset(AutoOffsetReset.Earliest)
            .withIsolationLevel(IsolationLevel.ReadCommitted)
            .pure[F]
        )(_ => ().pure[F])
+
+   extension [F[_]: Async, K, V](settings: ConsumerSettings[F, K, V])
+     def kafka(using
+       L: Logger[F]
+     ): Resource[F, KafkaConsumer[F, K, V]] =
+       KafkaConsumer
+         .resource[F, K, V](settings)
+         .preAllocate(L.info("Acquire Consumer..."))
+         .onFinalize(L.info("Release Consumer..."))
