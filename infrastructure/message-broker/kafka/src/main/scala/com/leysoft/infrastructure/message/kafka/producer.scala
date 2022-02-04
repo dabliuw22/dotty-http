@@ -3,6 +3,7 @@ package com.leysoft.infrastructure.message.kafka
 import cats.MonadThrow
 import cats.effect.Async
 import cats.syntax.applicative.*
+import cats.syntax.applicativeError.*
 import cats.syntax.apply.*
 import cats.syntax.functor.*
 import cats.syntax.flatMap.*
@@ -29,28 +30,39 @@ object producer:
       override def execute[A <: Message](
         message: A
       ): Contextual[F[MessageMetadata]] =
-        Stream
-          .emit(message)
-          .covary[F]
-          .map(record =>
-            ProducerRecord(
-              record.metadata.channel.value,
-              record.metadata.key.value,
-              record
-            )
-          )
-          .map(record => ProducerRecords.one(record))
-          .through(KafkaProducer.pipe(S, P))
-          .as(message.metadata)
-          .compile
-          .toList
-          .adaptError(error => ProducerError(error.getMessage))
-          .flatMap {
-            case head :: _ => head.pure[F]
-            case Nil       =>
-              Async[F].raiseError(
-                ProducerError(
-                  s"Message: ${message.getClass} not published"
-                )
+        Logger[F].info(
+          s"Init Publish message: ${message.getClass}"
+        ) *>
+          Stream
+            .emit(message)
+            .covary[F]
+            .map(record =>
+              ProducerRecord(
+                record.metadata.channel.value,
+                record.metadata.key.value,
+                record
               )
-          } <* Logger[F].info(s"Publish message: ${message.getClass}")
+            )
+            .map(ProducerRecords.one)
+            .through(KafkaProducer.pipe(S, P))
+            .as(message.metadata)
+            .compile
+            .toList
+            .adaptError(error => ProducerError(error.getMessage))
+            .flatMap {
+              case head :: _ =>
+                head.pure[F] <* Logger[F].info(
+                  s"Publish message: ${message.getClass}"
+                )
+              case Nil       =>
+                Async[F].raiseError(
+                  ProducerError(
+                    s"${message.getClass} not published"
+                  )
+                )
+            }
+            .onError(error =>
+              Logger[F].error(
+                s"${message.getClass} not published"
+              )(error)
+            )
