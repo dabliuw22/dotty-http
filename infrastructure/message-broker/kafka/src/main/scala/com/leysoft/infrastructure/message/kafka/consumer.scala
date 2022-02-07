@@ -1,7 +1,7 @@
 package com.leysoft.infrastructure.message.kafka
 
 import cats.MonadThrow
-import cats.effect.{Async, Ref}
+import cats.effect.{Async, Ref, Resource, Sync}
 import cats.syntax.applicative.*
 import cats.syntax.flatMap.*
 import cats.syntax.functor.*
@@ -14,19 +14,20 @@ import fs2.kafka.*
 import fs2.Stream
 import org.typelevel.log4cats.StructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+
 import scala.concurrent.duration.*
 
 object consumer:
    given [F[_]](using
      F: Async[F],
      M: MonadThrow[F],
-     P: KafkaConsumer[F, String, Message],
+     C: KafkaConsumer[F, String, Message],
      S: ConsumerState[F]
    ): Consumer[F] with
       given StructuredLogger[F] = Slf4jLogger.getLogger[F]
       override def execute(channels: String*): Stream[F, Unit] =
         Stream
-          .emit(P)
+          .emit(C)
           .covary[F]
           .evalTap(_.subscribeTo(channels.head, channels.tail*))
           .flatMap(_.stream)
@@ -45,10 +46,9 @@ object consumer:
           .as(message)
 
    trait ConsumerState[F[_]]:
-      def register[A <: Message](
-        key: Class[A],
+      def register[A <: Message](key: Class[A])(
         value: Handler[F]
-      ): F[Unit]
+      ): Resource[F, Unit]
       def execute[A <: Message](message: A): Stream[F, Unit]
 
    object ConsumerState:
@@ -58,22 +58,27 @@ object consumer:
 
       type State[F[_]] = Ref[F, Map[Class[?], List[Handler[F]]]]
 
+      def empty[F[_]: Sync]: Resource[F, State[F]] =
+        Resource.eval(Ref.of(Map[Class[?], List[Handler[F]]]().empty))
+
       given [F[_]: Async](using
         S: State[F],
         P: Producer[F]
       ): ConsumerState[F] with
          given StructuredLogger[F] = Slf4jLogger.getLogger[F]
-         override def register[A <: Message](
-           key: Class[A],
+         override def register[A <: Message](key: Class[A])(
            value: Handler[F]
-         ): F[Unit] =
-           S.get
-             .flatMap(
-               _.get(key).fold(S.update(_.updated(key, List(value))))(
-                 values =>
+         ): Resource[F, Unit] =
+           Resource.eval(
+             S.get
+               .flatMap(
+                 _.get(key).fold(
+                   S.update(_.updated(key, List(value)))
+                 )(values =>
                    S.update(_.updated(key, values.appended(value)))
+                 )
                )
-             )
+           )
          override def execute[A <: Message](
            message: A
          ): Stream[F, Unit] =
