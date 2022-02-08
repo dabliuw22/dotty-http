@@ -46,71 +46,61 @@ lazy val plugins =
     case _            => Seq(SbtDotenv)
   }
 
+lazy val itConfig =
+  inConfig(IntegrationTest)(
+    Defaults.itSettings ++ ScalafmtPlugin.scalafmtConfigSettings
+  )
+
+lazy val testConfig =
+  inConfig(Test)(
+    Defaults.testSettings ++ ScalafmtPlugin.scalafmtConfigSettings
+  )
+
 lazy val root = (project in file("."))
   .settings(commonSettings: _*)
   .settings(
-    name    := "dotty-http",
-    version := "0.1.0-SNAPSHOT"
-  )
-  .configs(IntegrationTest)
-  .settings(inConfig(IntegrationTest)(Defaults.itSettings))
-  .settings(
-    inConfig(IntegrationTest)(ScalafmtPlugin.scalafmtConfigSettings)
+    name := "dotty-http"
   )
   .configs(Test)
-  .enablePlugins(FlywayPlugin)
-  .settings(inConfig(Test)(Defaults.testSettings))
+  .settings(testConfig)
+  .configs(IntegrationTest)
+  .settings(itConfig)
+  .enablePlugins(plugins: _*)
+  .aggregate(
+    core,
+    infrastructure,
+    products,
+  )
+
+lazy val products = (project in file("products"))
+  .settings(commonSettings: _*)
   .settings(
+    name := "products",
+    scalacOptions ++= options
+  )
+  .aggregate(
+    productsDomain
+  )
+
+lazy val productsDomain = (project in file("products/domain"))
+  .settings(commonSettings: _*)
+  .configs(Test)
+  .settings(testConfig)
+  .settings(
+    name := "products-domain",
+    scalacOptions ++= options,
     libraryDependencies ++= Seq(
-      monocle,
-      squants,
-      kittens,
       cats("cats-kernel"),
       cats("cats-core"),
       cats("cats-free"),
       catsMtl,
-      catsEffect,
-      circe("circe-core"),
-      circe("circe-generic"),
-      circe("circe-parser"),
-      fs2("fs2-core"),
-      fs2("fs2-io"),
-      logback,
-      logbackEncoder,
-      log4Cats("log4cats-core"),
-      log4Cats("log4cats-slf4j"),
-      http4s("http4s-dsl"),
-      http4s("http4s-blaze-server"),
-      http4s("http4s-blaze-client"),
-      http4s("http4s-circe"),
-      groovy
-    ),
-    Compile / mainClass        := Some("com.leysoft.ContextualMain"),
-    assembly / mainClass       := Some("com.leysoft.ContextualMain"),
-    assembly / assemblyJarName := "main.jar",
-    flywayUrl                  := sys
-      .env
-      .getOrElse(
-        "DATABASE_URL",
-        "jdbc:postgresql://localhost:5432/database"
-      ),
-    flywayUser     := sys.env.getOrElse("DATABASE_USER", "postgres"),
-    flywayPassword := sys.env.getOrElse("DATABASE_PASSWORD", "postgres"),
-    flywayLocations += "db/migration"
-  ).enablePlugins(plugins: _*)
-  .aggregate(core, infrastructure)
+      monocle,
+      fs2("fs2-core")
+    )
+  )
   .dependsOn(
-    kernel,
-    logger,
-    http,
-    httpKernel,
-    server,
-    client,
-    database,
-    sql,
-    memory,
-    message,
-    kafka
+    kernel % "compile->compile;test->test",
+    logger
   )
 
 lazy val core = (project in file("core"))
@@ -126,6 +116,8 @@ lazy val core = (project in file("core"))
 
 lazy val kernel = (project in file("core/kernel"))
   .settings(commonSettings: _*)
+  .configs(Test)
+  .settings(testConfig)
   .settings(
     name := "kernel",
     scalacOptions ++= options,
@@ -149,6 +141,8 @@ lazy val kernel = (project in file("core/kernel"))
 
 lazy val logger = (project in file("core/logger"))
   .settings(commonSettings: _*)
+  .configs(Test)
+  .settings(testConfig)
   .settings(
     name := "logger",
     scalacOptions ++= options,
@@ -195,6 +189,8 @@ lazy val http = (project in file("infrastructure/http"))
 
 lazy val httpKernel = (project in file("infrastructure/http/kernel"))
   .settings(commonSettings: _*)
+  .configs(Test)
+  .settings(testConfig)
   .settings(
     name := "http-kernel",
     scalacOptions ++= options,
@@ -215,6 +211,8 @@ lazy val httpKernel = (project in file("infrastructure/http/kernel"))
 
 lazy val server = (project in file("infrastructure/http/server"))
   .settings(commonSettings: _*)
+  .configs(Test)
+  .settings(testConfig)
   .settings(
     name := "http-server",
     scalacOptions ++= options,
@@ -250,6 +248,11 @@ lazy val server = (project in file("infrastructure/http/server"))
 
 lazy val client = (project in file("infrastructure/http/client"))
   .settings(commonSettings: _*)
+  .configs(Test)
+  .settings(testConfig)
+  .configs(IntegrationTest)
+  .settings(itConfig)
+  .settings(itSettings: _*)
   .settings(
     name := "http-client",
     scalacOptions ++= options,
@@ -298,6 +301,11 @@ lazy val database = (project in file("infrastructure/database"))
 
 lazy val sql = (project in file("infrastructure/database/sql"))
   .settings(commonSettings: _*)
+  .configs(Test)
+  .settings(testConfig)
+  .configs(IntegrationTest)
+  .settings(itConfig)
+  .settings(itSettings: _*)
   .settings(
     name := "database-sql",
     scalacOptions ++= options,
@@ -332,6 +340,11 @@ lazy val sql = (project in file("infrastructure/database/sql"))
 
 lazy val memory = (project in file("infrastructure/database/memory"))
   .settings(commonSettings: _*)
+  .configs(Test)
+  .settings(testConfig)
+  .configs(IntegrationTest)
+  .settings(itConfig)
+  .settings(itSettings: _*)
   .settings(
     name := "database-memory",
     scalacOptions ++= options,
@@ -372,6 +385,11 @@ lazy val message = (project in file("infrastructure/message-broker"))
 
 lazy val kafka = (project in file("infrastructure/message-broker/kafka"))
   .settings(commonSettings: _*)
+  .configs(Test)
+  .settings(testConfig)
+  .configs(IntegrationTest)
+  .settings(itConfig)
+  .settings(itSettings: _*)
   .settings(
     name := "kafka",
     scalacOptions ++= options,
