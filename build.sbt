@@ -72,6 +72,7 @@ lazy val root = (project in file("."))
     products,
   )
 
+
 lazy val products = (project in file("products"))
   .settings(commonSettings: _*)
   .settings(
