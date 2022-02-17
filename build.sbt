@@ -72,7 +72,6 @@ lazy val root = (project in file("."))
     products,
   )
 
-
 lazy val products = (project in file("products"))
   .settings(commonSettings: _*)
   .settings(
@@ -80,7 +79,8 @@ lazy val products = (project in file("products"))
     scalacOptions ++= options
   )
   .aggregate(
-    productsDomain
+    productsDomain,
+    productsAdapters
   )
 
 lazy val productsDomain = (project in file("products/domain"))
@@ -96,12 +96,48 @@ lazy val productsDomain = (project in file("products/domain"))
       cats("cats-free"),
       catsMtl,
       monocle,
+      squants,
       fs2("fs2-core")
     )
   )
   .dependsOn(
     kernel % "compile->compile;test->test",
     logger
+  )
+
+lazy val productsAdapters = (project in file("products/adapters"))
+  .settings(commonSettings: _*)
+  .configs(Test)
+  .settings(testConfig)
+  .settings(
+    name := "products-adapters",
+    scalacOptions ++= options,
+    libraryDependencies ++= Seq(
+      cats("cats-kernel"),
+      cats("cats-core"),
+      cats("cats-free"),
+      catsMtl,
+      monocle,
+      fs2("fs2-core"),
+      circe("circe-core"),
+      circe("circe-generic"),
+      circe("circe-parser"),
+      http4s("http4s-dsl"),
+      http4s("http4s-blaze-server"),
+      http4s("http4s-blaze-client"),
+      http4s("http4s-circe")
+    )
+  )
+  .dependsOn(
+    kernel % "compile->compile;test->test",
+    logger,
+    productsDomain % "compile->compile;test->test",
+    httpKernel,
+    server,
+    client,
+    sql,
+    memory,
+    kafka,
   )
 
 lazy val core = (project in file("core"))
