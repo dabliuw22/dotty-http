@@ -70,6 +70,120 @@ lazy val root = (project in file("."))
     core,
     infrastructure,
     products,
+    api,
+    commands
+  )
+
+lazy val api = (project in file("api"))
+  .settings(commonSettings: _*)
+  .settings(
+    name    := "api",
+    version := "0.1.0-SNAPSHOT"
+  )
+  .configs(Test)
+  .settings(testConfig)
+  .configs(IntegrationTest)
+  .settings(itConfig)
+  .settings(itSettings: _*)
+  .enablePlugins(FlywayPlugin)
+  .enablePlugins(plugins: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      monocle,
+      squants,
+      kittens,
+      cats("cats-kernel"),
+      cats("cats-core"),
+      cats("cats-free"),
+      catsMtl,
+      catsEffect,
+      circe("circe-core"),
+      circe("circe-generic"),
+      circe("circe-parser"),
+      fs2("fs2-core"),
+      fs2("fs2-io"),
+      logback,
+      logbackEncoder,
+      log4Cats("log4cats-core"),
+      log4Cats("log4cats-slf4j"),
+      http4s("http4s-dsl"),
+      http4s("http4s-blaze-server"),
+      http4s("http4s-blaze-client"),
+      http4s("http4s-circe"),
+      groovy
+    ),
+    Compile / mainClass        := Some("com.leysoft.api.Api"),
+    assembly / mainClass       := Some("com.leysoft.api.Api"),
+    assembly / assemblyJarName := "api.jar",
+    flywayUrl                  := sys
+      .env
+      .getOrElse(
+        "DATABASE_URL",
+        "jdbc:postgresql://localhost:5432/database"
+      ),
+    flywayUser     := sys.env.getOrElse("DATABASE_USER", "postgres"),
+    flywayPassword := sys.env.getOrElse("DATABASE_PASSWORD", "postgres"),
+    flywayLocations += "db/migration"
+  )
+  .dependsOn(
+    kernel,
+    logger,
+    httpKernel,
+    server,
+    client,
+    sql,
+    memory,
+    kafka
+  )
+
+lazy val commands = (project in file("commands"))
+  .settings(commonSettings: _*)
+  .settings(
+    name    := "commands",
+    version := "0.1.0-SNAPSHOT"
+  )
+  .configs(Test)
+  .settings(testConfig)
+  .configs(IntegrationTest)
+  .settings(itConfig)
+  .settings(itSettings: _*)
+  .enablePlugins(plugins: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      monocle,
+      squants,
+      kittens,
+      cats("cats-kernel"),
+      cats("cats-core"),
+      cats("cats-free"),
+      catsMtl,
+      catsEffect,
+      circe("circe-core"),
+      circe("circe-generic"),
+      circe("circe-parser"),
+      fs2("fs2-core"),
+      fs2("fs2-io"),
+      logback,
+      logbackEncoder,
+      log4Cats("log4cats-core"),
+      log4Cats("log4cats-slf4j"),
+      http4s("http4s-dsl"),
+      http4s("http4s-blaze-client"),
+      http4s("http4s-circe"),
+      groovy
+    ),
+    Compile / mainClass        := Some("com.leysoft.commands.Consumer"),
+    assembly / mainClass       := Some("com.leysoft.commands.Consumer"),
+    assembly / assemblyJarName := "commands.jar",
+  )
+  .dependsOn(
+    kernel,
+    logger,
+    httpKernel,
+    client,
+    sql,
+    memory,
+    kafka
   )
 
 lazy val products = (project in file("products"))
