@@ -19,6 +19,12 @@ object data:
      key: MessageKey,
      createdAt: MessageCreatedAt
    )
+   object MessageMetadata:
+      inline def make(
+        channel: MessageChannel,
+        key: MessageKey = MessageKey()
+      ): MessageMetadata =
+        MessageMetadata(channel, key, MessageCreatedAt())
    @JsonTypeInfo(
      use = JsonTypeInfo.Id.CLASS,
      include = JsonTypeInfo.As.PROPERTY,
