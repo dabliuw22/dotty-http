@@ -11,14 +11,14 @@ import com.leysoft.core.logger.algebra.Logger
 import org.typelevel.log4cats.StructuredLogger
 
 trait Logger[F[_]]:
-   def info(message: String): Contextual[F[Unit]]
-   def error(message: String): Contextual[F[Unit]]
+   def info(message: String): Kind[F, Unit]
+   def error(message: String): Kind[F, Unit]
    def error(message: String)(
      error: Throwable
-   ): Contextual[F[Unit]]
-   def debug(message: String): Contextual[F[Unit]]
-   def warn(message: String): Contextual[F[Unit]]
-   def trace(message: String): Contextual[F[Unit]]
+   ): Kind[F, Unit]
+   def debug(message: String): Kind[F, Unit]
+   def warn(message: String): Kind[F, Unit]
+   def trace(message: String): Kind[F, Unit]
 
 object Logger:
    inline def apply[F[_]](using F: Logger[F]): Logger[F] = F
@@ -30,44 +30,38 @@ object Logger:
        )
 
    given ctxLogger[F[_]: Sync: StructuredLogger]: Logger[F] with
-      override def info(message: String): Contextual[F[Unit]]  =
+      override def info(message: String): Kind[F, Unit]  =
         get
-          .pure
           .flatMap(context =>
             StructuredLogger[F].info(context)(message)
           )
-      override def error(message: String): Contextual[F[Unit]] =
+      override def error(message: String): Kind[F, Unit] =
         get
-          .pure
           .flatMap(context =>
             StructuredLogger[F].error(context)(message)
           )
       override def error(
         message: String
-      )(error: Throwable): Contextual[F[Unit]] =
+      )(error: Throwable): Kind[F, Unit] =
         get
-          .pure
           .flatMap(context =>
             StructuredLogger[F].error(context, error)(message)
           )
-      override def debug(message: String): Contextual[F[Unit]] =
+      override def debug(message: String): Kind[F, Unit] =
         get
-          .pure
           .flatMap(context =>
             StructuredLogger[F].debug(context)(message)
           )
-      override def warn(message: String): Contextual[F[Unit]]  =
+      override def warn(message: String): Kind[F, Unit]  =
         get
-          .pure
           .flatMap(context =>
             StructuredLogger[F].warn(context)(message)
           )
-      override def trace(message: String): Contextual[F[Unit]] =
+      override def trace(message: String): Kind[F, Unit] =
         get
-          .pure
           .flatMap(context =>
             StructuredLogger[F].trace(context)(message)
           )
 
-      private def get: Contextual[Map[String, String]] =
-        summon[Context].toMap
+      private def get: Kind[F, Map[String, String]] =
+        summon[Context].toMap.pure[F]
