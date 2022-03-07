@@ -8,30 +8,30 @@ import scala.concurrent.duration.FiniteDuration
 trait Redis[F[_]]:
    def hmGet[A](using
      D: Redis.Decoder[A]
-   )(key: String, fields: String*): Contextual[F[Option[A]]]
+   )(key: String, fields: String*): Kind[F, Option[A]]
    def hmSet[A](using
      E: Redis.Encoder[A]
-   )(key: String, value: A): Contextual[F[Unit]]
+   )(key: String, value: A): Kind[F, Unit]
    def jsGet[A](using D: Decoder[A])(
      key: String
-   ): Contextual[F[Option[A]]]
+   ): Kind[F, Option[A]]
    def jsSet[A](using
      E: Encoder[A]
-   )(key: String, value: A): Contextual[F[Unit]]
-   def hGet(key: String, field: String): Contextual[F[Option[String]]]
+   )(key: String, value: A): Kind[F, Unit]
+   def hGet(key: String, field: String): Kind[F, Option[String]]
    def hSet(
      key: String,
      field: String,
      value: String
-   ): Contextual[F[Boolean]]
-   def hDel(key: String, fields: String*): Contextual[F[Long]]
-   def get(key: String): Contextual[F[Option[String]]]
-   def set(key: String, value: String): Contextual[F[Unit]]
-   def del(key: String): Contextual[F[Long]]
+   ): Kind[F, Boolean]
+   def hDel(key: String, fields: String*): Kind[F, Long]
+   def get(key: String): Kind[F, Option[String]]
+   def set(key: String, value: String): Kind[F, Unit]
+   def del(key: String): Kind[F, Long]
    def expire(
      key: String,
      expiration: FiniteDuration
-   ): Contextual[F[Boolean]]
+   ): Kind[F, Boolean]
 
 object Redis:
    inline def apply[F[_]](using F: Redis[F]): Redis[F] =
