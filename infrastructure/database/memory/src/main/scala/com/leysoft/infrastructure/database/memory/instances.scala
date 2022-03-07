@@ -29,7 +29,7 @@ object instances:
       override def hmGet[A](using D: Redis.Decoder[A])(
         key: String,
         fields: String*
-      ): Contextual[F[Option[A]]] =
+      ): Kind[F, Option[A]] =
         Logger[F].info(s"hmGet: $key") *> R
           .hmGet(key, fields.distinct*)
           .map(Redis.Decoder[A].decode)
@@ -37,7 +37,7 @@ object instances:
       override def hmSet[A](using E: Redis.Encoder[A])(
         key: String,
         value: A
-      ): Contextual[F[Unit]] =
+      ): Kind[F, Unit] =
         Logger[F].info(s"hmSet: $key") *>
           Redis
             .Encoder[A]
@@ -47,13 +47,13 @@ object instances:
             .adaptError(error => Redis.RedisError(error.getMessage))
       override def jsGet[A](using D: Decoder[A])(
         key: String
-      ): Contextual[F[Option[A]]] =
+      ): Kind[F, Option[A]] =
         Logger[F].info(s"jsGet: $key") *> get(key).map(
           _.flatMap(json => decode[A](json).toOption)
         )
       override def jsSet[A](using
         E: Encoder[A]
-      )(key: String, value: A): Contextual[F[Unit]] =
+      )(key: String, value: A): Kind[F, Unit] =
         Logger[F].info(s"jsSet: $key") *> value
           .asJson
           .noSpaces
@@ -62,7 +62,7 @@ object instances:
       override def hGet(
         key: String,
         field: String
-      ): Contextual[F[Option[String]]] =
+      ): Kind[F, Option[String]] =
         Logger[F].info(s"hGet: $key") *> R
           .hGet(key, field)
           .adaptError(error => Redis.RedisError(error.getMessage))
@@ -70,36 +70,36 @@ object instances:
         key: String,
         field: String,
         value: String
-      ): Contextual[F[Boolean]] =
+      ): Kind[F, Boolean] =
         Logger[F].info(s"hSet: $key") *> R
           .hSet(key, field, value)
           .adaptError(error => Redis.RedisError(error.getMessage))
       override def hDel(
         key: String,
         fields: String*
-      ): Contextual[F[Long]] =
+      ): Kind[F, Long] =
         Logger[F].info(s"hDel: $key") *> R
           .hDel(key, fields.distinct*)
           .adaptError(error => Redis.RedisError(error.getMessage))
-      override def get(key: String): Contextual[F[Option[String]]] =
+      override def get(key: String): Kind[F, Option[String]] =
         Logger[F].info(s"get: $key") *> R
           .get(key)
           .adaptError(error => Redis.RedisError(error.getMessage))
       override def set(
         key: String,
         value: String
-      ): Contextual[F[Unit]] =
+      ): Kind[F, Unit] =
         Logger[F].info(s"set: $key") *> R
           .set(key, value)
           .adaptError(error => Redis.RedisError(error.getMessage))
-      override def del(key: String): Contextual[F[Long]]           =
+      override def del(key: String): Kind[F, Long]           =
         Logger[F].info(s"del: $key") *> R
           .del(key)
           .adaptError(error => Redis.RedisError(error.getMessage))
       override def expire(
         key: String,
         expiration: FiniteDuration
-      ): Contextual[F[Boolean]] =
+      ): Kind[F, Boolean] =
         Logger[F].info(s"expire: $key") *> R
           .expire(key, expiration)
           .adaptError(error => Redis.RedisError(error.getMessage))
