@@ -8,14 +8,14 @@ trait Skunk[F[_]]:
    def option[A, B](
      query: Query[B, A],
      args: B
-   ): Contextual[F[Option[A]]]
+   ): Kind[F, Option[A]]
    def stream[A, B](
      query: Query[B, A],
      args: B,
      size: Int = 64
-   ): ContextualStream[F, A]
-   def list[A, B](query: Query[B, A], args: B): Contextual[F[List[A]]]
-   def command[A](command: Command[A], args: A): Contextual[F[Int]]
+   ): Flow[F, A]
+   def list[A, B](query: Query[B, A], args: B): Kind[F, List[A]]
+   def command[A](command: Command[A], args: A): Kind[F, Int]
 
 object Skunk:
    inline def apply[F[_]](using F: Skunk[F]): Skunk[F] =
