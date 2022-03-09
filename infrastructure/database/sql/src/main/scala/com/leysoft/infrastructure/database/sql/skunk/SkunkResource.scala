@@ -15,6 +15,6 @@ object SkunkResource:
      S: Console[F]
    ): Resource[F, Skunk[F]] =
      for
-        config                        <- C.load
-        transactor @ given Session[F] <- config.pool[F]
+        config                     <- C.load
+        session @ given Session[F] <- config.pool[F]
      yield Skunk[F]
