@@ -7,11 +7,11 @@ import doobie.util.query.Query0
 import doobie.util.update.Update0
 
 trait Doobie[F[_]]:
-   def option[T](query: Query0[T]): Contextual[F[Option[T]]]
-   def stream[T](query: Query0[T]): ContextualStream[F, T]
-   def list[T](query: Query0[T]): Contextual[F[List[T]]]
-   def command(command: Update0): Contextual[F[Int]]
-   def transaction[A](program: => ConnectionIO[A]): Contextual[F[A]]
+   def option[T](query: Query0[T]): Kind[F, Option[T]]
+   def stream[T](query: Query0[T]): Flow[F, T]
+   def list[T](query: Query0[T]): Kind[F, List[T]]
+   def command(command: Update0): Kind[F, Int]
+   def transaction[A](program: => ConnectionIO[A]): Kind[F, A]
 
 object Doobie:
    inline def apply[F[_]](using F: Doobie[F]): Doobie[F] =
