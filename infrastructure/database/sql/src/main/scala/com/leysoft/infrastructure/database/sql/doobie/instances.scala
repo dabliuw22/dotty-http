@@ -25,27 +25,27 @@ object instances:
       given StructuredLogger[F] = Slf4jLogger.getLogger[F]
       override def option[T](
         query: Query0[T]
-      ): Contextual[F[Option[T]]] =
+      ): Kind[F, Option[T]] =
         Logger[F].info(s"Option: ${query.sql}") *> transaction {
           query.option
         }
       override def stream[T](
         query: Query0[T]
-      ): ContextualStream[F, T] =
+      ): Flow[F, T] =
         Stream.eval(Logger[F].info(s"Stream: ${query.sql}")) >> query
           .stream
           .transact(T)
           .adaptError(error => Doobie.DoobieError(error.getMessage))
-      override def list[T](query: Query0[T]): Contextual[F[List[T]]] =
+      override def list[T](query: Query0[T]): Kind[F, List[T]] =
         Logger[F].info(s"List: ${query.sql}") *> transaction {
           query.stream.compile.toList
         }
-      override def command(command: Update0): Contextual[F[Int]]     =
+      override def command(command: Update0): Kind[F, Int]     =
         Logger[F].info(s"Command: ${command.sql}") *>
           transaction[Int] { command.run }
       override def transaction[A](
         program: => ConnectionIO[A]
-      ): Contextual[F[A]] =
+      ): Kind[F, A] =
         program
           .transact(T)
           .adaptError(error => Doobie.DoobieError(error.getMessage))
