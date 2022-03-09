@@ -21,7 +21,7 @@ object instances:
       override def option[A, B](
         query: Query[B, A],
         args: B
-      ): Contextual[F[Option[A]]] =
+      ): Kind[F, Option[A]] =
         Logger[F].info(s"Option: ${query.sql}") *> S
           .prepare(query)
           .use(_.option(args))
@@ -30,7 +30,7 @@ object instances:
         query: Query[B, A],
         args: B,
         size: Int = 64
-      ): ContextualStream[F, A] =
+      ): Flow[F, A] =
         for
            _        <-
              fs2.Stream.eval(Logger[F].info(s"Stream: ${query.sql}"))
@@ -45,7 +45,7 @@ object instances:
       override def list[A, B](
         query: Query[B, A],
         args: B
-      ): Contextual[F[List[A]]] =
+      ): Kind[F, List[A]] =
         Logger[F].info(s"List: ${query.sql}") *> stream[A, B](
           query,
           args
@@ -53,7 +53,7 @@ object instances:
       override def command[A](
         command: Command[A],
         args: A
-      ): Contextual[F[Int]] =
+      ): Kind[F, Int] =
         Logger[F].info(s"Command: ${command.sql}") *>
           S.prepare(command)
             .use {
