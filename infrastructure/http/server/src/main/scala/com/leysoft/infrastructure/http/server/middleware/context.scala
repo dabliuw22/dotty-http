@@ -10,8 +10,8 @@ import org.http4s.{Request, Response}
 
 object context:
    extension [F[_]: Async](request: Request[F])
-     def handle(f: Kind[F, Response[F]]): F[Response[F]] =
+     def handle(program: => Kind[F, Response[F]]): F[Response[F]] =
        for
           context @ given Context <- request.getContext
-          response                <- f
+          response                <- program
        yield response.withContext
