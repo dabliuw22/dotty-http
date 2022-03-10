@@ -65,11 +65,11 @@ object instances:
      L: StructuredLogger[F]
    ) extends HttpClient[F]
        with Http4sClientDsl[F]:
-      override def status(uri: Uri): Contextual[F[Status]] =
+      override def status(uri: Uri): Kind[F, Status] =
         Logger[F].info(s"status: $uri") *> C.statusFromUri(uri)
       override def status(
         request: Request[F]
-      ): Contextual[F[Status]] =
+      ): Kind[F, Status] =
         Logger[F].info(
           s"status: ${request.method.name}: ${request.uri}"
         ) *> C
@@ -77,12 +77,12 @@ object instances:
           .adaptError(error => HttpClientError(error.getMessage))
       override def get[A](uri: Uri)(
         f: Response[F] => F[A]
-      ): Contextual[F[A]] =
+      ): Kind[F, A] =
         Logger[F].info(s"get: $uri") *>
           run(GET(uri))(f)
       override def run[A](
         request: Request[F]
-      )(f: Response[F] => F[A]): Contextual[F[A]] =
+      )(f: Response[F] => F[A]): Kind[F, A] =
         Logger[F].info(
           s"run: ${request.method.name}: ${request.uri}"
         ) *>
@@ -91,14 +91,14 @@ object instances:
             .adaptError(error => HttpClientError(error.getMessage))
       override def expect[A](request: Request[F])(using
         D: EntityDecoder[F, A]
-      ): Contextual[F[A]] = Logger[F].info(
+      ): Kind[F, A] = Logger[F].info(
         s"expect: ${request.method.name}: ${request.uri}"
       ) *> C
         .expect(request.withContext)
         .adaptError(error => HttpClientError(error.getMessage))
       override def expectOption[A](request: Request[F])(using
         D: EntityDecoder[F, A]
-      ): Contextual[F[Option[A]]] =
+      ): Kind[F, Option[A]] =
         Logger[F].info(
           s"expectOption: ${request.method.name}: ${request.uri}"
         ) *> C
@@ -106,21 +106,21 @@ object instances:
           .adaptError(error => HttpClientError(error.getMessage))
       override def expectOr[A](request: Request[F])(
         onError: Response[F] => F[Throwable]
-      )(using D: EntityDecoder[F, A]): Contextual[F[A]] =
+      )(using D: EntityDecoder[F, A]): Kind[F, A] =
         Logger[F].info(
           s"expectOr: ${request.method.name}: ${request.uri}"
         ) *> C
           .expectOr(request.withContext.pure[F])(onError)
       override def expectOptionOr[A](request: Request[F])(
         onError: Response[F] => F[Throwable]
-      )(using D: EntityDecoder[F, A]): Contextual[F[Option[A]]] =
+      )(using D: EntityDecoder[F, A]): Kind[F, Option[A]] =
         Logger[F].info(
           s"expectOptionOr: ${request.method.name}: ${request.uri}"
         ) *> C
           .expectOptionOr(request.withContext)(onError)
       override def stream(
         request: Request[F]
-      ): ContextualStream[F, Response[F]] =
+      ): Flow[F, Response[F]] =
         fs2
           .Stream
           .eval(
