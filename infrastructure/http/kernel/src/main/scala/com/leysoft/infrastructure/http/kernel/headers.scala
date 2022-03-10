@@ -2,7 +2,6 @@ package com.leysoft.infrastructure.http.kernel
 
 import cats.Applicative
 import cats.syntax.applicative.*
-import com.leysoft.core.kernel.context.contextual.Contextual
 import com.leysoft.core.kernel.context.data.*
 import org.http4s.{Header, Headers, Http, Request, Response}
 import org.typelevel.ci.*
