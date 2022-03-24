@@ -6,7 +6,7 @@ import cats.syntax.applicative.*
 import cats.syntax.flatMap.*
 import cats.syntax.functor.*
 import com.leysoft.core.kernel.context.data.Context
-import com.leysoft.core.kernel.context.contextual.ContextualStream
+import com.leysoft.core.kernel.context.contextual.*
 import com.leysoft.core.kernel.message.data.*
 import com.leysoft.core.kernel.message.*
 import com.leysoft.core.logger.Logger
@@ -106,7 +106,7 @@ object consumer:
               }
          private def handle[A <: Message](
            message: A
-         )(handler: Handler[F]): ContextualStream[F, Unit] =
+         )(handler: Handler[F]): Flow[F, Unit] =
            handler
              .execute(message)
              .evalMap(result =>
@@ -116,11 +116,11 @@ object consumer:
              )
          private def error(
            message: String
-         ): ContextualStream[F, Unit] =
+         ): Flow[F, Unit] =
            Stream.eval(Logger[F].error(message))
 
          private def error(
            message: String,
            cause: Throwable
-         ): ContextualStream[F, Unit] =
+         ): Flow[F, Unit] =
            Stream.eval(Logger[F].error(message)(cause))
