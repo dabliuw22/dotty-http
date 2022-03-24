@@ -29,7 +29,7 @@ object producer:
       given StructuredLogger[F] = Slf4jLogger.getLogger[F]
       override def execute[A <: Message](
         message: A
-      ): Contextual[F[MessageMetadata]] =
+      ): Kind[F, MessageMetadata] =
         Logger[F].info(
           s"Init Publish message: ${message.getClass}"
         ) *>
