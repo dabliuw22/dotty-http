@@ -194,6 +194,7 @@ lazy val products = (project in file("products"))
   )
   .aggregate(
     productsDomain,
+    productsApplications,
     productsAdapters
   )
 
@@ -217,6 +218,28 @@ lazy val productsDomain = (project in file("products/domain"))
   .dependsOn(
     kernel % "compile->compile;test->test",
     logger
+  )
+
+lazy val productsApplications = (project in file("products/application"))
+  .settings(commonSettings: _*)
+  .configs(Test)
+  .settings(testConfig)
+  .settings(
+    name := "products-application",
+    scalacOptions ++= options,
+    libraryDependencies ++= Seq(
+      cats("cats-kernel"),
+      cats("cats-core"),
+      cats("cats-free"),
+      catsMtl,
+      monocle,
+      fs2("fs2-core")
+    )
+  )
+  .dependsOn(
+    kernel % "compile->compile;test->test",
+    logger,
+    productsDomain % "compile->compile;test->test"
   )
 
 lazy val productsAdapters = (project in file("products/adapters"))
