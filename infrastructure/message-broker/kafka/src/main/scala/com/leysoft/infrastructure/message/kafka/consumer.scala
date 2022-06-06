@@ -25,11 +25,18 @@ object consumer:
      S: ConsumerState[F]
    ): Consumer[F] with
       given StructuredLogger[F] = Slf4jLogger.getLogger[F]
-      override def execute(channels: String*): Stream[F, Unit] =
+      override def execute(
+        channels: MessageChannel*
+      ): Stream[F, Unit] =
         Stream
           .emit(C)
           .covary[F]
-          .evalTap(_.subscribeTo(channels.head, channels.tail*))
+          .evalTap(
+            _.subscribeTo(
+              channels.head.value,
+              channels.map(_.value).tail*
+            )
+          )
           .flatMap(_.stream)
           .flatMap(reduce)
           .map(_.offset)
