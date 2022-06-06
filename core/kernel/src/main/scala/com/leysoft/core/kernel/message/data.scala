@@ -9,6 +9,9 @@ import java.util.UUID
 
 object data:
    case class MessageChannel(value: String)
+   object MessageChannel:
+      extension (s: String)
+        inline def toChannel: MessageChannel = MessageChannel(s)
    case class MessageKey(value: String = UUID.randomUUID.toString)
    case class MessageCreatedAt(
      value: ZonedDateTime = ZonedDateTime.now
