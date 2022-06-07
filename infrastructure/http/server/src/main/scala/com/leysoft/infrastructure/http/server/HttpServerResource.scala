@@ -3,7 +3,6 @@ package com.leysoft.infrastructure.http.server
 import cats.effect.{Async, Resource}
 import cats.syntax.functor.*
 import cats.syntax.semigroupk.*
-import com.leysoft.infrastructure.http.server.middleware.ContextMiddleware
 import com.leysoft.infrastructure.http.server.routes.HealthRoute
 import config.HttpServerConfiguration
 import org.http4s.{HttpApp, HttpRoutes}
