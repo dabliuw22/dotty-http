@@ -1,7 +1,6 @@
 package com.leysoft.core.kernel.message
 
 import com.leysoft.core.kernel.context.data.Context
-import com.leysoft.core.kernel.newtype.instances.given
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 
 import java.time.ZonedDateTime

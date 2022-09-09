@@ -43,4 +43,3 @@ object data:
       given Encoder[A]     = enc
       given Decoder[A]     = dec
       given Ordering[Type] = ord.toOrdering
-end data
