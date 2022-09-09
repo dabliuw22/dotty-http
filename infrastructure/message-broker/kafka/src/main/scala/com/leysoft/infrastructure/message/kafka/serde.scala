@@ -68,6 +68,10 @@ object serde:
       inline def apply(message: String): BusinessError =
         DeserializerError(message, "00040")
 
+   // import fs2.kafka.Deserializer.given
+   given [F[_]: Async]: Deserializer[F, String] =
+     Deserializer.string[F]
+
    given [F[_]: Async](using
      D: Deserializer[F, String]
    ): Deserializer[F, Message] =
@@ -84,6 +88,9 @@ object serde:
            )(_.pure[F])
          )
      }
+
+   // import fs2.kafka.Serializer.given
+   given [F[_]: Async]: Serializer[F, String] = Serializer.string[F]
 
    given [F[_]: Async](using
      S: Serializer[F, String]
