@@ -1,11 +1,21 @@
 import Dependencies._
 
 lazy val options = Seq(
+  //"-encoding",
+  "UTF-8",
   "-feature", // emit warning and location for usages of features that should be imported explicitly
   "-deprecation", // emit warning and location for usages of deprecated APIs
+  //"-explain",   // explain errors in more detail
+  //"-explain-types",
   "-unchecked", // enable additional warnings where generated code depends on assumptions
   "-language:postfixOps",
-  "-language:higherKinds" // or import scala.language.higherKinds
+  "-language:higherKinds", // or import scala.language.higherKinds
+  //"-new-syntax",
+  //"-Xmigration",
+  //"-print-lines",
+  //"-rewrite",
+  //"-indent",
+  //"-source:3.1"
 )
 
 lazy val jvmOptions = Seq()
