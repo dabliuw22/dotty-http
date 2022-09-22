@@ -33,7 +33,7 @@ object Dependencies {
   lazy val http4sJdkHttpClient = 
     "org.http4s" %% "http4s-jdk-http-client" % "0.6.0-M7"
   def circe(artifact: String): ModuleID =
-    "io.circe" %% artifact % "0.14.1"
+    "io.circe" %% artifact % "0.14.3"
   lazy val jacksonScala: ModuleID =
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.0"
   def jacksonModule(artifact: String): ModuleID =
