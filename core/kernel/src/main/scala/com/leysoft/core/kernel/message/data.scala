@@ -16,7 +16,7 @@ object data:
      value: ZonedDateTime = ZonedDateTime.now
    )
    case class MessageId(value: String = UUID.randomUUID.toString)
-   case class MessageMetadata(
+   final case class MessageMetadata(
      channel: MessageChannel,
      key: MessageKey,
      createdAt: MessageCreatedAt
