@@ -1,0 +1,1 @@
+--ALTER DATABASE database SET timezone TO 'America/Bogota';
