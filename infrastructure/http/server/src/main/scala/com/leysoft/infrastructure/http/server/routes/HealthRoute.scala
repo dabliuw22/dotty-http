@@ -12,7 +12,7 @@ import org.http4s.circe.CirceEntityEncoder.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.implicits.*
 
-class HealthRoute[F[_]](using F: Async[F]) extends Http4sDsl[F]:
+final class HealthRoute[F[_]](using F: Async[F]) extends Http4sDsl[F]:
    def routes: HttpRoutes[F] = HttpRoutes
      .of[F] { case GET -> Root / "health" =>
        HealthRoute

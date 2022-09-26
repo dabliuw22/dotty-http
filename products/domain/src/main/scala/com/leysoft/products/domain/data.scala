@@ -14,6 +14,8 @@ object data:
       def toKernel: KernelProductId = KernelProductId(value)
    object ProductId:
       inline def make: ProductId = ProductId(UUID.randomUUID.toString)
+      extension (s: String)
+        inline def toProductId: ProductId = ProductId(s)
    case class ProductName(value: String)  extends AnyVal:
       def toKernel: KernelProductName = KernelProductName(value)
    case class ProductStock(value: Double) extends AnyVal:
