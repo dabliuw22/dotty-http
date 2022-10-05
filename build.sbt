@@ -20,6 +20,8 @@ lazy val options = Seq(
 
 lazy val jvmOptions = Seq()
 
+lazy val jvmcOptions = Seq("-source", "19")
+
 lazy val testsFrameworks = Seq(
   new TestFramework("weaver.framework.CatsEffect")
 )
@@ -30,6 +32,7 @@ lazy val commonSettings = Seq(
   scalaVersion                     := scala3Version,
   scalacOptions                    := options,
   javaOptions                      := jvmOptions,
+  javacOptions                     := jvmcOptions,
   Test / fork                      := true,
   Test / testForkedParallel        := true,
   Test / parallelExecution         := true,

@@ -1,7 +1,7 @@
 # dotty-http
 
 ## Requirements
-* JDK >= 1.8
+* JDK >= 19
 * Sbt
 * Dotty
 * Docker Compose
