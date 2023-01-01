@@ -48,21 +48,21 @@ object Api extends IOApp:
 object Application:
    def apply[F[_]: Async: Console: Spawn]: Resource[F, Server] =
      for
-        supervisor @ given Supervisor[F]             <- Supervisor[F]
-        logger @ given Logger[F]                     <-
+        _ @ given Supervisor[F]            <- Supervisor[F]
+        _ @ given Logger[F]                <-
           Resource.eval(Slf4jLogger.create[F])
-        apiConfig @ given ApiConfiguration           <-
+        apiConfig @ given ApiConfiguration <-
           FromEnv[F, ApiConfiguration].load
-        serverConfig @ given HttpServerConfiguration <-
+        _ @ given HttpServerConfiguration  <-
           FromEnv[F, HttpServerConfiguration].load
         // skunk @ given Skunk[F]       <- SkunkResource[F]
         // redis @ given Redis[F]       <- RedisResource[F]
-        producer @ given Producer[F]                 <-
+        _ @ given Producer[F]              <-
           KafkaProducerResource[F](apiConfig.clientId.value)
-        exc @ given ExecutionContext = ExecutionContext.global
-        action @ given Action[F]     = Action[F]
-        program @ given Program[F]   = Program[F]
-        service                      = helloWorldService[F]
+        _ @ given ExecutionContext = ExecutionContext.global
+        // action @ given Action[F]     = Action[F] // instance in com.leysoft.api.Action
+        // program @ given Program[F]   = Program[F] // instance in com.leysoft.api.Program
+        service                    = helloWorldService[F]
         server <- HttpServerResource[F](service)
      yield server
 
@@ -76,6 +76,6 @@ object Application:
           request.handle {
             P
               .run(name)
-              .flatMap(result => Ok(s"Hello, $name."))
+              .flatMap(_ => Ok(s"Hello, $name."))
           }
         }

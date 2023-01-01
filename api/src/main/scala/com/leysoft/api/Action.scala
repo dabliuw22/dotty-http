@@ -19,7 +19,7 @@ object Action:
    inline def apply[F[_]](using F: Action[F]): Action[F] =
      summon[Action[F]]
 
-   given [F[_]: Async](using
+   inline given [F[_]: Async](using
      S: Supervisor[F],
      C: ContextHandler[F],
      P: Producer[F]

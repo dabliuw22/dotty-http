@@ -1,7 +1,7 @@
 import sbt._
 
 object Dependencies {
-  lazy val scala3Version = "3.1.0"
+  lazy val scala3Version = "3.2.1"
 
   def cats(artifact: String): ModuleID =
     "org.typelevel" %% artifact % "2.7.0"

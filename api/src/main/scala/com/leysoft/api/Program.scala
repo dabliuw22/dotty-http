@@ -17,7 +17,7 @@ object Program:
      F: Program[F]
    ): Program[F] = F
 
-   given [F[_]: Async](using
+   inline given [F[_]: Async](using
      S: Supervisor[F],
      C: ContextHandler[F],
      A: Action[F]
