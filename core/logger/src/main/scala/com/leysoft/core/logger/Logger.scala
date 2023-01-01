@@ -7,7 +7,6 @@ import cats.syntax.show.*
 import com.leysoft.core.kernel.context.contextual.*
 import com.leysoft.core.kernel.context.data.Context
 import com.leysoft.core.kernel.newtype.instances.given
-import com.leysoft.core.logger.algebra.Logger
 import org.typelevel.log4cats.StructuredLogger
 
 trait Logger[F[_]]:

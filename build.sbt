@@ -5,7 +5,7 @@ lazy val options = Seq(
   "UTF-8",
   "-feature", // emit warning and location for usages of features that should be imported explicitly
   "-deprecation", // emit warning and location for usages of deprecated APIs
-  //"-explain",   // explain errors in more detail
+  "-explain",   // explain errors in more detail
   //"-explain-types",
   "-unchecked", // enable additional warnings where generated code depends on assumptions
   "-language:postfixOps",
@@ -343,6 +343,7 @@ lazy val logger = (project in file("core/logger"))
       squants,
       kittens,
       logback,
+      logbackEncoder,
       log4Cats("log4cats-core"),
       log4Cats("log4cats-slf4j"),
       groovy
